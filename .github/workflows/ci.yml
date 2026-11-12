@@ -5,15 +5,14 @@
 #
 # Repository checks (every tier): source branch, lint (ShellCheck, actionlint,
 # zizmor), format (including the executable bit of scripts and hooks), commit
-# messages, Node dependency audit, template guard.
+# messages, Node dependency audit.
 #
-# This workflow is copied into every project created from the template, so every
-# job has to pass on a fresh checkout that has no Flutter project yet. The
-# Flutter jobs switch on in tiers:
+# This workflow came with the project template. The Flutter jobs switch on in tiers
+# (this project is at Tier 3):
 #
 #   Tier 1  no pubspec.yaml               all Flutter jobs are skipped
 #   Tier 2  pubspec.yaml, no lock file    flutter doctor only
-#   Tier 3  pubspec.yaml + pubspec.lock   format, analyze, test, audit, doctor
+#   Tier 3  pubspec.yaml + pubspec.lock   format, analyze, boundaries, test, audit, doctor
 #
 # Tier 3 plus a pinned backend contract (api/openapi.yaml) also checks that the
 # generated API client in lib/api is current. Projects without a contract skip it.
@@ -22,9 +21,8 @@
 # without a pull request, so a newly published advisory in pnpm-lock.yaml or
 # pubspec.lock, or a new Flutter stable that breaks format, analyze or test in a
 # project without a Flutter pin, shows up within a week instead of on the next,
-# unrelated pull request. In the template repository the weekly run also scaffolds
-# a throwaway Flutter project (template-sample). A failed weekly run opens or
-# updates the issue "Weekly CI run failed".
+# unrelated pull request. A failed weekly run opens or updates the issue
+# "Weekly CI run failed".
 name: CI
 
 on:
@@ -183,9 +181,8 @@ jobs:
           git ls-files -z '.husky/*' | xargs -0 --no-run-if-empty shellcheck --shell=sh
 
       # Both linters are pinned with `version:`: without it the actions run the
-      # newest release, which can fail Lint on a day nothing here changed. The
-      # weekly Image contract run (.github/scripts/check-tool-versions.sh) fails
-      # while a pin is behind a release that is at least 7 days old.
+      # newest release, which can fail Lint on a day nothing here changed. Raise
+      # a pin by hand when a newer release is out.
       - name: Actionlint (workflows)
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
         with:
@@ -319,31 +316,6 @@ jobs:
           corepack enable
           pnpm audit --audit-level high
 
-  # The template itself must stay a blank canvas: Flutter source and the native
-  # folders are created per project by `flutter create`. Runs only in the
-  # template repository, never in a project generated from it.
-  template-guard:
-    name: Template guard
-    if: github.event.repository.is_template
-    runs-on: ubuntu-26.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Keep the template a blank canvas
-        run: |
-          status=0
-          for path in pubspec.yaml pubspec.lock lib android ios web test; do
-            if [ -e "$path" ]; then
-              echo "::error::'$path' must not exist in the template (flutter create makes it per project)."
-              status=1
-            fi
-          done
-          exit "$status"
-
   # ── Flutter project checks (Tier 3 unless noted) ─────────────────────────
   flutter-format:
     name: Flutter format
@@ -389,6 +361,23 @@ jobs:
       # resolves different package versions than the ones committed.
       - run: flutter pub get --enforce-lockfile
       - run: flutter analyze --fatal-infos
+
+  flutter-boundaries:
+    name: Folder boundaries
+    needs: detect
+    if: >-
+      needs.detect.outputs.tier == '3' &&
+      (github.event.pull_request.draft == false || github.event_name != 'pull_request')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The layer rules of the app (architecture), checked on the import lines only.
+      - run: bash scripts/check-boundaries.sh
 
   flutter-test:
     name: Flutter test
@@ -517,41 +506,6 @@ jobs:
 
       - run: flutter doctor -v
 
-  # Canary for the template repository: scaffold a throwaway Flutter project with
-  # the newest stable and run the checks a generated project's CI runs on it. The
-  # template ships no Flutter code, so a new Flutter release that breaks `flutter
-  # create` output (format, analyze, test) would otherwise first show up in a
-  # project. It does not run on pull requests, so an upstream change can never
-  # block an unrelated pull request; it runs in the weekly run and on demand, and a
-  # failure opens the weekly issue. Inert in a generated project.
-  template-sample:
-    name: Flutter sample project
-    if: github.event.repository.is_template && github.event_name != 'pull_request'
-    runs-on: ubuntu-26.04
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Flutter
-        uses: ./.github/actions/setup-flutter
-
-      - name: Create the sample project
-        run: flutter create --platforms=android,web --project-name template_sample "$RUNNER_TEMP/sample"
-
-      - name: Format, analyze and test the sample
-        working-directory: ${{ runner.temp }}/sample
-        run: |
-          dart format --set-exit-if-changed .
-          flutter analyze --fatal-infos
-          flutter test
-
-  # The one check to require in branch protection. It always runs and fails if
-  # any job above failed or was cancelled; jobs skipped by design (a Flutter job
-  # on a fresh template, the template guard in a generated project) count as
-  # passed.
   ci-passed:
     name: CI passed
     if: always()
@@ -562,10 +516,9 @@ jobs:
       - format
       - commits
       - node-audit
-      - template-guard
-      - template-sample
       - flutter-format
       - flutter-analyze
+      - flutter-boundaries
       - flutter-test
       - flutter-audit
       - api-client

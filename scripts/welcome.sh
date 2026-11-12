@@ -40,13 +40,19 @@ ADB_PORTS=5555 bash "$WORKSPACE/scripts/connect-emulator.sh" --quiet || true
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  🐦  flutter-template — dev container ready"
+echo "  🐦  Wasli restaurant app — dev container ready"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ -f "$WORKSPACE/pubspec.yaml" ] && [ -f "$WORKSPACE/pubspec.lock" ]; then
   # ── Tier 3: full project ────────────────────────────────────────────────────
-  APP_NAME=$(grep '^name:' "$WORKSPACE/pubspec.yaml" | awk '{print $2}')
-  FLUTTER_VER=$(flutter --version 2>/dev/null | head -1 | awk '{print $2}')
+  # The banner is a convenience, so both values fall back to "unknown" instead of
+  # failing the start. awk reads all of Flutter's output: with `head -1` the reader
+  # exits early, Flutter (Dart) gets a broken pipe and exits 255, and pipefail then
+  # aborts the script.
+  APP_NAME=$(awk '/^name:/ { print $2; exit }' "$WORKSPACE/pubspec.yaml") || APP_NAME=""
+  : "${APP_NAME:=unknown}"
+  FLUTTER_VER=$(flutter --version 2>/dev/null | awk 'NR == 1 { print $2 }') || FLUTTER_VER=""
+  : "${FLUTTER_VER:=unknown}"
   echo ""
   echo "  ✅  Flutter project detected: ${APP_NAME}"
   echo "  🔧  Flutter ${FLUTTER_VER} · Dart · Android SDK · Web"
@@ -68,7 +74,7 @@ if [ -f "$WORKSPACE/pubspec.yaml" ] && [ -f "$WORKSPACE/pubspec.lock" ]; then
   fi
   echo ""
   echo "  ❯ Git aliases:  gs · ga · gc · gp · gl"
-  echo "  📖  https://github.com/alihaidar0/flutter-template"
+  echo "  📖  https://github.com/Aalihaidar/wasli-restaurant-flutter"
 
 elif [ -f "$WORKSPACE/pubspec.yaml" ]; then
   # ── Tier 2: initialised but no lockfile ─────────────────────────────────────
@@ -80,7 +86,7 @@ elif [ -f "$WORKSPACE/pubspec.yaml" ]; then
   echo "  └──────────────────────────────────────────────────────────────────┘"
   echo ""
   echo "  ❯ Git aliases:  gs · ga · gc · gp · gl"
-  echo "  📖  https://github.com/alihaidar0/flutter-template"
+  echo "  📖  https://github.com/Aalihaidar/wasli-restaurant-flutter"
 
 else
   # ── Tier 1: fresh template ──────────────────────────────────────────────────
@@ -106,7 +112,7 @@ else
   echo "  │  fdoctor → check environment                                     │"
   echo "  └──────────────────────────────────────────────────────────────────┘"
   echo ""
-  echo "  📖  https://github.com/alihaidar0/flutter-template"
+  echo "  📖  https://github.com/Aalihaidar/wasli-restaurant-flutter"
 fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
