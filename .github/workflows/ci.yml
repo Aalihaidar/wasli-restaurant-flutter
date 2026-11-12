@@ -336,6 +336,10 @@ jobs:
         with:
           flutter-version: ${{ needs.detect.outputs.flutter_version }}
 
+      # analysis_options.yaml includes package:very_good_analysis and sets the formatter width (120).
+      # Without resolved packages the include fails, the width is ignored and the formatter uses 80 columns,
+      # so the check would fail on correctly formatted files.
+      - run: flutter pub get --enforce-lockfile
       - run: dart format --set-exit-if-changed .
 
   flutter-analyze:

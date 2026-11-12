@@ -143,7 +143,7 @@ Each item is its own small pull request.
 - [x] **Decide** providers and value classes: hand-written Riverpod providers, plain Dart 3 classes, no `freezed` or
       `equatable`, no `riverpod_generator` (decided 2026-11-12)
 - [ ] `app/`: `bootstrap()`, `ProviderScope`, global error zone, router, app shell
-- [ ] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
+- [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
 - [ ] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings)
 - [ ] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
