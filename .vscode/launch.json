@@ -11,7 +11,7 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "host.docker.internal:5555",
-      "args": ["--flavor", "staging"],
+      "args": ["--flavor", "staging", "--dart-define=APP_ENV=staging", "--dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1"],
       "preLaunchTask": "Connect host emulator"
     },
     {
@@ -34,7 +34,10 @@
       "program": "lib/main.dart",
       "flutterMode": "debug",
       "deviceId": "web-server",
-      "args": ["--web-port", "8080", "--web-hostname", "0.0.0.0"]
+      "args": [
+        "--web-port", "8080", "--web-hostname", "0.0.0.0",
+        "--dart-define=APP_ENV=staging", "--dart-define=API_BASE_URL=http://localhost:8000/api/v1"
+      ]
     }
   ],
   "compounds": [

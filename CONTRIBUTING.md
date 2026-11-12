@@ -1,31 +1,37 @@
 # Contributing
 
-Thanks for improving `flutter-template`. This repository provides the developer toolchain and CI/CD scaffolding that every new Flutter project starts from, so a change here reaches every project generated from it. Changes are kept small and verified.
+This is the restaurant app of Wasli: the screens restaurant staff use to receive and answer orders. The backend is a
+separate repository and the customer app is a sibling repository; this one holds only the restaurant app. Changes are
+kept small, reviewed and verified.
 
-## Scope
+## Ground rules
 
-In scope: the dev container and compose setup, the git hooks, the CI and build workflows, repository governance (rulesets, labels, templates, Dependabot) and the documentation.
-
-Out of scope:
-
-- Flutter application code, `lib/`, `pubspec.yaml`, `pubspec.lock`, `android/`, `ios/`, `web/` or `test/`. This template must stay a zero-code starting point; `flutter create` makes them per project.
-- Anything that belongs in the dev image (SDKs, system packages, shell aliases, the prompt). That is [`flutter-devcontainer`](https://github.com/alihaidar0/flutter-devcontainer).
-- Store and hosting deployment (Play Store, App Store, Firebase, a web host) and the secrets for it. Targets differ per project. `build.yml` builds, signs and drafts releases from per-project keys and GitHub environments ([`docs/android-signing.md`](docs/android-signing.md), [`docs/environments.md`](docs/environments.md)); the keys, the flavors and the Gradle file are not part of the template.
+- **The backend decides, the app renders.** The app never builds chat text, never computes a price and never decides an
+  order status change. It sends accept or reject and shows what the server returns.
+- **The generated client is the only way to reach the API.** `lib/api` and `api/openapi.yaml` are never edited by hand;
+  a change to the contract goes through the backend first, then this repository pins the new release.
+- **Layers and folders.** `lib/` is `app/`, `core/`, `theme/`, `api/` (generated) and `features/<feature>/` with
+  `domain`, `data`, `application` and `presentation`. `core`, `theme` and `api` never import `features` or `app`; a
+  feature never imports another feature's `data` or `presentation`; `domain` is pure Dart. `scripts/check-boundaries.sh`
+  enforces this (run it locally; CI runs it too).
+- **Personal data** (customer position, car plate, notes, staff tokens) is never logged, never written to disk by the
+  app beyond the token store, and never appears in tests, fixtures, issues or pull requests. Use invented data.
 
 ## Branching and pull requests
 
-- `main` is the stable, released state; `develop` is the integration branch, the default branch (what "Use this template" copies) and where Dependabot pull requests land. Neither branch accepts direct pushes.
-- Work on a topic branch (`feat/…`, `fix/…`, `docs/…`, `ci/…`, `chore/…`, `deps/…`) and open the pull request against **`develop`**.
-- Only a `develop` → `main` pull request may target `main`.
+- `main` is the released state; `develop` is the integration branch and the default branch. Neither accepts direct
+  pushes.
+- Work on a short-lived topic branch (`feat/…`, `fix/…`, `docs/…`, `ci/…`, `chore/…`, `deps/…`) and open the pull
+  request against **`develop`**. One branch is one reviewable change.
+- Only a `develop` → `main` pull request may target `main`; it is the release.
 - Merge with a **merge commit**. Squash and rebase merging are disabled.
-- Fill in the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) and use a Conventional Commit title: labels (they drive the release notes) are added automatically from it, and you can add more by hand.
+- Fill in the pull request template and use a Conventional Commit title.
 - The **CI passed** check must be green before merging.
-
-The full branch model, repository settings and rulesets are described in [`docs/github-setup.md`](docs/github-setup.md).
+- A change to `api/openapi.yaml` must include the regenerated `lib/api` in the same pull request.
 
 ## Before you start
 
-Husky hooks activate when the dev container is created (`postCreateCommand` runs `pnpm install`). To register them again:
+The git hooks are registered when the dev container is created (`pnpm install`). To register them again:
 
 ```bash
 pnpm install
@@ -33,50 +39,60 @@ pnpm install
 
 ## Commit messages
 
-[Conventional Commits](https://www.conventionalcommits.org/), enforced locally by commitlint and Husky's `commit-msg` hook and again in CI for every commit of a pull request:
+[Conventional Commits](https://www.conventionalcommits.org/), enforced by commitlint locally (the `commit-msg` hook) and
+in CI for every commit of a pull request:
 
 ```text
-feat(ci): add coverage upload to the test job
-fix(devcontainer): correct flutterSdkPath
-docs(readme): clarify emulator setup
+feat(orders): add the incoming orders list
+fix(auth): clear the session after a 401
+docs(readme): describe the local backend setup
 build(deps): bump the commitlint group
 ```
 
-Valid types: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` `wip`. The type is lower-case, the subject is not sentence-, start-, Pascal- or upper-case and has no trailing period. A change that forces already-generated projects to adapt is breaking: `feat!:` with a `BREAKING CHANGE:` footer. The only exception to the 100-character header limit is the merge commit of a Dependabot pull request (`ci|chore|build(deps): bump … (#N)`), whose generated title can be longer; the commits inside it are still linted.
-
-## Making changes
-
-- **Dev container, compose, VS Code config** — edit `.devcontainer/devcontainer.json`, `docker-compose.yml` or `.vscode/*`, and test with **Dev Containers: Rebuild Container**. Anything the image already provides (user, paths, aliases, pnpm, Chrome) is not repeated here.
-- **Workflows** — edit `.github/workflows/*.yml`. The template must pass on a fresh checkout (Tier 1, no `pubspec.yaml`) and on an initialised project (Tier 3); every new job needs a tier condition and a place in the `ci-passed` job's `needs:`. `build.yml` is not a required check: it must skip cleanly until `pubspec.yaml` and `pubspec.lock` exist, then build test builds (debug key, no secrets) for pull requests into `develop` (**staging**) and `main` (**production**) and signed builds with a draft release for merges into `develop` and `main`, with no edit needed in a generated project. Only the `build-android-signed` job may reference the signing secrets, and only the `release-draft` job may have `contents: write`. Android jobs skip with a warning until the project defines the `staging` and `production` flavors. `release.yml` publishes the calendar-versioned template releases and is inert in a project, whose releases are the drafts of `build.yml`.
-- **Backend API contract (optional)** — `scripts/sync-api.sh`, `scripts/generate-api.sh`, `swagger_parser.yaml`, `docs/consuming-the-api.md`, the `api-client` job of `ci.yml` and `backend-contract.yml` (which needs the repository variable `BACKEND_REPO`) are inert until a project pins `api/openapi.yaml`. Keep them that way: the template ships no `api/`, no `lib/api`, no `pubspec.yaml` and no packages; the job must be skipped, never failed, on a fresh checkout and in an app without a contract, and the generation commands live only in `scripts/generate-api.sh`.
-- **Git hooks** — edit `.husky/*`. They must never block a commit or push when `pubspec.yaml` is absent (see the Tier-1 guard in `.husky/pre-commit`). In a project, `pre-commit` runs the CI-equivalent checks (file hygiene, executable scripts, `dart format`, `flutter analyze --fatal-infos`, `flutter test`); keep it in step with the **Format** and Flutter jobs of `ci.yml`.
-- **Template follows the newest, projects freeze** — the template stays on `:latest` and the newest stable Flutter; a project runs `scripts/pin-image.sh` to freeze the dev image (the newest permanent `flutter-X.Y.Z.R` tag plus its digest) and its Flutter version. Do not pin the template itself.
-- **Pinned versions** — GitHub Actions are pinned to a full commit SHA with a `# vX.Y.Z` comment, and `packageManager` (pnpm) equals the version the image pre-caches. Verify a version on its official channel before changing it, and name the bump in the pull request title.
-- **Node stays on 24**, matching the image. `engines.node` and the Dependabot ignore rule must agree.
-- **Shell scripts and hooks use LF line endings** and are executable in Git; a CRLF script fails inside the container.
-- **Workflow hygiene** — least-privilege `permissions:`, `persist-credentials: false` on checkout, `timeout-minutes` on every job, and `${{ }}` values reach `run:` scripts through `env:`, never inline.
-- **Spelling** — `cspell.json` configures the spell checker (VS Code runs it through the Code Spell Checker extension). British and American English are both accepted. Add a genuine project word (a name, a tool, a technical term; never a typo) to `.cspell/project-words.txt`, lowercase and in alphabetical order. To check the whole repository: `npx cspell --no-progress "**"`.
-- **Keep the documentation true** — update `README.md` and `CHANGELOG.md` in the same pull request.
+Valid types: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` `wip`. The type is
+lower-case, the subject is imperative, is not sentence-, start-, Pascal- or upper-case, has no trailing period, and the
+header is at most 100 characters. A breaking change is `feat!:` with a `BREAKING CHANGE:` footer.
 
 ## Checking your change locally
 
+Run these in the dev container; they are the same checks as CI:
+
 ```bash
-bash -n scripts/*.sh
-docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable scripts/*.sh
-docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable --shell=sh .husky/commit-msg .husky/pre-commit .husky/pre-push
-docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -no-color
-docker run --rm -v "$PWD:/repo:ro" -w /repo ghcr.io/zizmorcore/zizmor:1.30.1 --no-progress --offline .
-docker compose config --quiet
-echo "chore: example" | pnpm exec commitlint     # must pass
-echo "bad message" | pnpm exec commitlint        # must fail
-git ls-files -s scripts .husky .github/scripts   # every mode must be 100755 (new files: git add --chmod=+x <file>)
+dart format --set-exit-if-changed .
+flutter analyze --fatal-infos
+flutter test
+scripts/check-boundaries.sh
 ```
 
-CI runs the same checks and more.
+The commit hooks run the format, analyze and test checks. Fix what they report; do not bypass them.
+
+## Code style
+
+- Dart files are `snake_case.dart`, lines are at most 120 characters, indentation is 2 spaces, and `very_good_analysis`
+  is the lint set (`analysis_options.yaml`).
+- Public APIs have doc comments. No `// ignore` without a reason, no `TODO` without an issue number.
+- No hard-coded UI strings (ARB files for `en` and `ar`), no raw colours or magic numbers (use the theme tokens),
+  directional APIs only (`EdgeInsetsDirectional`), and every new screen is checked in both text directions.
+- Tests use invented data, never call the real backend, and use deterministic clocks.
+
+## Spelling
+
+`cspell.json` configures the spell checker. Add a genuine project word (a name, a tool, a technical term; never a typo)
+to `.cspell/project-words.txt`, lowercase and in alphabetical order.
+
+## Workflows and scripts
+
+- Shell scripts and hooks use LF line endings and are executable in Git; a CRLF script fails inside the container.
+- GitHub Actions are pinned to a full commit SHA with a `# vX.Y.Z` comment. Workflows use least-privilege
+  `permissions:`, `persist-credentials: false` on checkout, `timeout-minutes` on every job, and `${{ }}` values reach
+  `run:` scripts through `env:`, never inline.
+- Only the signed Android build job may use the signing secrets, and only the release-draft job may have
+  `contents: write`.
 
 ## Bugs and feature requests
 
-Use the issue templates under **New issue**. Problems with the base Docker image itself belong in [`flutter-devcontainer`](https://github.com/alihaidar0/flutter-devcontainer/issues).
+Use the issue templates under **New issue**. Problems with the base dev image belong in
+[`flutter-devcontainer`](https://github.com/alihaidar0/flutter-devcontainer/issues).
 
 ## Security issues
 
