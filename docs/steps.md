@@ -109,20 +109,35 @@ Prepare these first ([`android-signing.md`](android-signing.md) sections 1 and 3
 
 ## Phase 3: GitHub repository settings (after the first pull request has run CI)
 
-- [ ] **General**: default branch `develop`; template repository off; merge commits on, squash and rebase off; suggest
-      updating branches, auto-merge and delete head branches on
-- [ ] **Actions → General**: allowed actions (GitHub-created plus `raven-actions/actionlint@*`,
-      `zizmorcore/zizmor-action@*`, `google/osv-scanner-action/*`); require full-SHA pinning; read-only workflow
-      permissions; Actions may not create or approve pull requests; fork workflows need approval
-- [ ] **Code security**: dependency graph, Dependabot alerts and security updates, secret scanning with push
-      protection, private vulnerability reporting, CodeQL default setup (language Actions)
-- [ ] Import the rulesets `main-protect`, `develop-protect`, `tags-protect` ([`github-setup.md`](github-setup.md) section 5)
-- [ ] Verify the protection ([`github-setup.md`](github-setup.md) section 7): direct pushes to `main`/`develop` are
-      rejected, a topic branch into `main` fails **Verify source branch**, `Fixed stuff` fails **Commit messages**
-- [ ] Environments `staging` and `production` exist as set up above; add the web deploy secrets to them when the
-      hosting is decided (Phase 6)
+The repository is **private** on the **GitHub Free plan** (owner, 2026-11-13). Settings are changed by the owner in the
+web UI; they are read back with read-only `gh` calls. Items marked **needs GitHub Pro** are not offered on a private
+repository without a paid plan (rulesets, environment branch rules, secret scanning, CodeQL).
+
+- [x] **General**: default branch `develop`; template repository off; merge commits on, squash and rebase off; suggest
+      updating branches, auto-merge and delete head branches on; wiki, projects and discussions off (read back 2026-11-13)
+- [x] **Actions → General**: selected actions only (GitHub-created plus `raven-actions/actionlint@*`,
+      `zizmorcore/zizmor-action@*`, `google/osv-scanner-action/*`; Marketplace verified creators off); full-SHA pinning
+      required; read-only workflow permissions; Actions may not create or approve pull requests; 30-day retention (read
+      back 2026-11-13)
+- [ ] Fork pull request approval: GitHub does not allow the setting on a private repository; set it if the repository
+      is ever made public
+- [x] **Code security, free part**: Dependabot alerts on (read back 2026-11-13)
+- [ ] **Code security, rest**: confirm the dependency graph and Dependabot security updates are on (not readable by
+      the API on a private repository)
+- [ ] **Needs GitHub Pro (or public):** secret scanning with push protection, private vulnerability reporting, CodeQL
+      default setup (language Actions)
+- [ ] **Needs GitHub Pro (or public):** import the rulesets `main-protect`, `develop-protect`, `tags-protect`
+      ([`github-setup.md`](github-setup.md) section 5). Until then `develop` and `main` are protected only by the local
+      `pre-push` hook and by never pushing to them
+- [ ] **Needs GitHub Pro (or public):** verify the protection ([`github-setup.md`](github-setup.md) section 7): direct
+      pushes to `main`/`develop` are rejected, a topic branch into `main` fails **Verify source branch**,
+      `Fixed stuff` fails **Commit messages**
+- [x] Environments `staging` and `production` exist (read back 2026-11-13)
+- [ ] **Needs GitHub Pro:** restrict `staging` to `develop` and `production` to `main`, administrator bypass off
+- [ ] Add the web deploy secrets to the environments when the hosting is decided (Phase 6)
 - [ ] Backend contract check: repository variable `BACKEND_REPO` and secret `BACKEND_READ_TOKEN` (fine-grained,
-      read-only Contents on the backend repository only)
+      read-only Contents on the backend repository only). Postponed to Phase 4: add them when `v0.1.0` is pinned,
+      otherwise the first weekly run opens an issue saying no release is pinned
 
 ## Phase 4: Backend contract and generated client (D1, backend `v0.1.0`), branch `feat/api-client`
 
@@ -146,7 +161,7 @@ Each item is its own small pull request.
 - [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
 - [ ] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings)
-- [ ] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
+- [x] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
       generic failure of the status)
 - [ ] `core/storage`: `TokenStore` interface; web interim implementation (memory first); `flutter_secure_storage`
       implementation for Android (Android backups exclude it; cleared on logout and on a `401`)
