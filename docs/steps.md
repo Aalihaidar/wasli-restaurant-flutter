@@ -152,14 +152,22 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
       commit, each through its own pull request. The weekly check finds no published release and does nothing until
       then; pinning by release tag (`scripts/sync-api.sh vX.Y.Z`) starts once a release is published
 - [x] `api/BACKEND_REPO` with the backend repository (`OWNER/REPO`)
-- [ ] `flutter pub add dio retrofit json_annotation`
-- [ ] `flutter pub add --dev build_runner json_serializable retrofit_generator swagger_parser`
-- [ ] Check whether `swagger_parser.yaml` can generate only this app's endpoints (staff and `config`); if not, generate
-      the whole client
-- [ ] `scripts/sync-api.sh --commit <sha>` with the backend commit that holds the contract (writes `api/openapi.yaml`,
-      `api/BACKEND_VERSION`, `lib/api`)
-- [ ] Exclude `lib/api/**` from analysis if `flutter analyze --fatal-infos` reports generated code
-- [ ] **API client is current** job green in CI
+- [x] `flutter pub add dio retrofit json_annotation`
+- [x] `flutter pub add --dev build_runner json_serializable retrofit_generator swagger_parser`
+- [x] `swagger_parser.yaml` rewritten for `swagger_parser` 2.x (the template's keys belong to the 1.x series). It generates
+      only this app's endpoints: `operation_filters.include_paths` lists `/api/v1/config`, `/api/v1/auth/**` and
+      `/api/v1/staff/**` (the staff paths match nothing until backend `v0.3.0`), and `prune_unused_models` drops the
+      models only the other endpoints use. Enums keep an `Unknown` case (`unknown_enum_values: preserve`)
+- [x] `scripts/sync-api.sh --commit a4f8591dab8d07aa97f6aec5b31b1293088b4255` (the head of the backend `develop` on
+      2026-11-14, the same commit the customer app pins; its `openapi/schema.yaml` was last changed at `7793413`):
+      writes `api/openapi.yaml` and `api/BACKEND_VERSION`, and `scripts/generate-api.sh` generates `lib/api` (only the
+      `config` client, since the pinned contract has no staff endpoint yet). `info.version` in the pinned file reads
+      `0.1.0`
+- [x] `lib/api/**` is excluded from analysis (since Phase 2); `flutter analyze --fatal-infos` reports nothing
+- [ ] Commit `api/` and `lib/api` together; the **API client is current** job is green
+- [ ] Fixture for `GET /config` with invented values taken from the contract example
+- [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
+      in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
 ## Phase 5: App foundation (D1)
 

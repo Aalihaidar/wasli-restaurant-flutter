@@ -1,0 +1,1674 @@
+openapi: 3.0.3
+info:
+  title: Wasli API
+  version: 0.1.0
+  description: 'The HTTP API of Wasli: order from the car through a chat with the
+    restaurant.'
+paths:
+  /api/v1/config:
+    get:
+      operationId: config_retrieve
+      description: 'The switches the apps need before anything else: the location
+        rule, whether a restaurant must be online to be listed, whether the assistant
+        is available, the languages and the polling interval. No token is needed.'
+      summary: Read the public configuration
+      tags:
+      - config
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
+  /api/v1/customers/login:
+    post:
+      operationId: customers_login
+      description: Signs a customer in with an email address or a phone number and
+        the password, and returns the customer token. `account_not_verified` until
+        the sign-up code is verified (the app opens the code screen). Ten tries per
+        contact in 15 minutes.
+      summary: Sign in
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /api/v1/customers/logout:
+    post:
+      operationId: customers_logout
+      description: Revokes the token of this device. Other devices stay signed in.
+      summary: Sign out
+      tags:
+      - customers
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/v1/customers/me:
+    get:
+      operationId: customers_me
+      description: The customer's name, language and contacts, and whether each contact
+        is verified.
+      summary: Read the profile
+      tags:
+      - customers
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfile'
+          description: ''
+  /api/v1/customers/me/contact:
+    post:
+      operationId: customers_contact_add
+      description: 'Sends a code to the contact the account does not have yet: an
+        email for a phone sign-up, a phone number for an email sign-up. It is saved
+        only after `customers_contact_verify`. Changing a contact the account already
+        has is not offered (`409 contact_already_set`); a contact that belongs to
+        another account is `409 account_exists`.'
+      summary: Add the missing contact
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentCode'
+          description: ''
+  /api/v1/customers/me/contact/verify:
+    post:
+      operationId: customers_contact_verify
+      description: Checks the code sent to the contact added with `customers_contact_add`,
+        saves the contact as verified and returns the profile. `409 no_pending_contact`
+        when none waits.
+      summary: Confirm the added contact
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactVerifyRequest'
+        required: true
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfile'
+          description: ''
+  /api/v1/customers/password-reset:
+    post:
+      operationId: customers_password_reset
+      description: Sends a six-digit code to the customer's **verified** contact.
+        The answer is the same `202` whether or not an account exists, and the limits
+        (one a minute, five an hour per contact) are the same too.
+      summary: Ask for a password reset code
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetSent'
+          description: ''
+  /api/v1/customers/password-reset/confirm:
+    post:
+      operationId: customers_password_reset_confirm
+      description: Checks the reset code and sets the new password. Every token of
+        the customer is revoked, so every device signs in again. A password that is
+        too weak is a `400` and does not spend the code.
+      summary: Set a new password with the code
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/v1/customers/resend-code:
+    post:
+      operationId: customers_resend_code
+      description: Sends a new code to an unverified account. A new code replaces
+        the old one, comes at most every 60 seconds and at most 5 an hour per contact
+        (`429 throttled` with `Retry-After`). A contact with no account, or an account
+        already verified, gets the same `202` and nothing is sent.
+      summary: Send a new sign-up code
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentCode'
+          description: ''
+  /api/v1/customers/signup:
+    post:
+      operationId: customers_signup
+      description: Creates an unverified account from a name, **an email or a phone
+        number**, a password and a language, and sends a six-digit code to that contact.
+        The customer then calls `customers_verify`. Signing up again with a contact
+        whose account is still unverified restarts the sign-up (new name, password
+        and code); a contact of a verified account is `409 account_exists`. No token
+        is needed.
+      summary: Sign up
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentCode'
+          description: ''
+  /api/v1/customers/verify:
+    post:
+      operationId: customers_verify
+      description: Checks the code sent at sign-up (valid 10 minutes, 5 wrong attempts).
+        On success the contact is verified and the customer token is returned, **only
+        here and at sign-in**. An unknown contact gets `code_invalid`, so the call
+        reveals nothing.
+      summary: Verify the sign-up code
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /api/v1/restaurants/{slug}:
+    get:
+      operationId: restaurants_retrieve
+      description: The restaurant's names, logo, brand colour, position and parking
+        lot, the menu images the chat sends, and the structured menu (categories,
+        items, option groups and options with their availability) that the item picker
+        uses. A restaurant that is not active or whose subscription is suspended is
+        a `404`. No token is needed.
+      summary: Read a restaurant and its menu
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - restaurants
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantDetail'
+          description: ''
+  /api/v1/restaurants/nearby:
+    get:
+      operationId: restaurants_nearby
+      description: Visible restaurants (active, subscription not suspended) whose
+        parking lot is in range of the point (within the lot's radius of its centre),
+        nearest first. `distance_m` is the distance to the restaurant itself. When
+        none is in range, `restaurants` is empty and `nearest` holds the closest active
+        restaurant. This list is polled and is not paginated. No token is needed.
+      summary: List the restaurants around a point
+      parameters:
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+        description: Latitude of the customer, in degrees.
+        required: true
+      - in: query
+        name: lng
+        schema:
+          type: number
+          format: double
+        description: Longitude of the customer, in degrees.
+        required: true
+      tags:
+      - restaurants
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearbyResponse'
+          description: ''
+components:
+  schemas:
+    ChannelEnum:
+      enum:
+      - email
+      - sms
+      type: string
+      description: |-
+        * `email` - Email
+        * `sms` - SMS
+    ClientErrorEnum:
+      enum:
+      - client_error
+      type: string
+      description: '* `client_error` - Client Error'
+    Config:
+      type: object
+      properties:
+        location_check:
+          allOf:
+          - $ref: '#/components/schemas/LocationCheckEnum'
+          description: |-
+            How an order's location is checked: `off`, `warn` (recorded, never blocks) or `enforce`.
+
+            * `off` - off
+            * `warn` - warn
+            * `enforce` - enforce
+        require_screen_online:
+          type: boolean
+          description: 'True: a restaurant is listed only while its site is online.'
+        ai_enabled:
+          type: boolean
+          description: 'False when the assistant is not available: use the item picker.'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguagesEnum'
+          description: The languages of the product.
+        poll_interval_seconds:
+          type: integer
+          description: How often the sites poll for new messages and orders.
+      required:
+      - ai_enabled
+      - languages
+      - location_check
+      - poll_interval_seconds
+      - require_screen_online
+    ContactRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Give this or phone.
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 1
+          description: Give this or email.
+          maxLength: 32
+    ContactVerifyRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: The six-digit code.
+          maxLength: 6
+          pattern: ^\d{6}$
+      required:
+      - code
+    CustomerProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        locale:
+          allOf:
+          - $ref: '#/components/schemas/LocaleEnum'
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+        email_verified:
+          type: boolean
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+          nullable: true
+        phone_verified:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - email_verified
+      - full_name
+      - id
+      - locale
+      - phone
+      - phone_verified
+    Error400:
+      type: object
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error400Response:
+      type: object
+      description: '``validation_error``: invalid input. ``client_error``: an unreadable
+        request body.'
+      properties:
+        type:
+          $ref: '#/components/schemas/Error400ResponseTypeEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error400'
+      required:
+      - errors
+      - type
+    Error400ResponseTypeEnum:
+      enum:
+      - validation_error
+      - client_error
+      type: string
+      description: |-
+        * `validation_error` - Validation Error
+        * `client_error` - Client Error
+    Error401:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode401Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error403:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode403Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error403Response:
+      type: object
+      description: '``403``: not allowed for this caller or in this state.'
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error403'
+      required:
+      - errors
+      - type
+    Error404:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode404Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error409:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode409Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error409Response:
+      type: object
+      description: '``409``: the request is valid but conflicts with the current state.'
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error409'
+      required:
+      - errors
+      - type
+    Error429:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode429Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    Error429Response:
+      type: object
+      description: '``429``: too many requests, or too many wrong attempts at a code.'
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error429'
+      required:
+      - errors
+      - type
+    ErrorCode401Enum:
+      type: string
+      description: |-
+        * `authentication_failed` - Authentication Failed
+        * `not_authenticated` - Not Authenticated
+      x-extensible-enum:
+      - authentication_failed
+      - not_authenticated
+    ErrorCode403Enum:
+      type: string
+      description: |-
+        * `permission_denied` - Permission Denied
+        * `account_not_verified` - Account Not Verified
+      x-extensible-enum:
+      - permission_denied
+      - account_not_verified
+    ErrorCode404Enum:
+      type: string
+      description: '* `not_found` - Not Found'
+      x-extensible-enum:
+      - not_found
+    ErrorCode409Enum:
+      type: string
+      description: |-
+        * `order_invalid_transition` - Order Invalid Transition
+        * `account_exists` - Account Exists
+        * `contact_already_set` - Contact Already Set
+        * `no_pending_contact` - No Pending Contact
+      x-extensible-enum:
+      - order_invalid_transition
+      - account_exists
+      - contact_already_set
+      - no_pending_contact
+    ErrorCode429Enum:
+      type: string
+      description: |-
+        * `throttled` - Throttled
+        * `too_many_attempts` - Too Many Attempts
+      x-extensible-enum:
+      - throttled
+      - too_many_attempts
+    ErrorResponse401:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error401'
+      required:
+      - errors
+      - type
+    ErrorResponse404:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error404'
+      required:
+      - errors
+      - type
+    LanguagesEnum:
+      enum:
+      - en
+      - ar
+      type: string
+      description: |-
+        * `en` - en
+        * `ar` - ar
+    LocaleEnum:
+      enum:
+      - en
+      - ar
+      type: string
+      description: |-
+        * `en` - English
+        * `ar` - Arabic
+    LocationCheckEnum:
+      enum:
+      - 'off'
+      - warn
+      - enforce
+      type: string
+      description: |-
+        * `off` - off
+        * `warn` - warn
+        * `enforce` - enforce
+    LoginRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: The email address or the phone number.
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - identifier
+      - password
+    MenuCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+          readOnly: true
+      required:
+      - id
+      - items
+      - name_ar
+      - name_en
+    MenuImage:
+      type: object
+      properties:
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        caption_en:
+          type: string
+          readOnly: true
+        caption_ar:
+          type: string
+          readOnly: true
+      required:
+      - caption_ar
+      - caption_en
+      - image_url
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        description_en:
+          type: string
+          readOnly: true
+        description_ar:
+          type: string
+          readOnly: true
+        price_minor:
+          type: integer
+          readOnly: true
+          description: 'In fils: 1250 is 12.50 AED.'
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        option_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionGroup'
+          readOnly: true
+      required:
+      - description_ar
+      - description_en
+      - id
+      - image_url
+      - is_available
+      - name_ar
+      - name_en
+      - option_groups
+      - price_minor
+    NearbyResponse:
+      type: object
+      properties:
+        restaurants:
+          type: array
+          items:
+            $ref: '#/components/schemas/NearbyRestaurant'
+        nearest:
+          allOf:
+          - $ref: '#/components/schemas/NearestRestaurant'
+          nullable: true
+          description: 'Only when `restaurants` is empty: the closest active restaurant,
+            so the app can say how far it is. `null` otherwise.'
+      required:
+      - nearest
+      - restaurants
+    NearbyRestaurant:
+      type: object
+      properties:
+        slug:
+          type: string
+        name_en:
+          type: string
+        name_ar:
+          type: string
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        distance_m:
+          type: integer
+          description: Metres from the customer to the restaurant.
+        is_open:
+          type: boolean
+          description: True while the restaurant's site is online and can take an
+            order.
+      required:
+      - distance_m
+      - is_open
+      - latitude
+      - logo_url
+      - longitude
+      - name_ar
+      - name_en
+      - slug
+    NearestRestaurant:
+      type: object
+      properties:
+        slug:
+          type: string
+        name_en:
+          type: string
+        name_ar:
+          type: string
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        distance_m:
+          type: integer
+          description: Metres from the customer to the restaurant.
+        is_open:
+          type: boolean
+          description: True while the restaurant's site is online and can take an
+            order.
+        parking_lot:
+          allOf:
+          - $ref: '#/components/schemas/ParkingLot'
+          readOnly: true
+      required:
+      - distance_m
+      - is_open
+      - latitude
+      - logo_url
+      - longitude
+      - name_ar
+      - name_en
+      - parking_lot
+      - slug
+    Option:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        price_delta_minor:
+          type: integer
+          readOnly: true
+          description: 'In fils, added to the item''s price: 200 is +2.00 AED.'
+        is_available:
+          type: boolean
+          readOnly: true
+        is_default:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - is_available
+      - is_default
+      - name_ar
+      - name_en
+      - price_delta_minor
+    OptionGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        min_select:
+          type: integer
+          readOnly: true
+        max_select:
+          type: integer
+          readOnly: true
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+          readOnly: true
+      required:
+      - id
+      - max_select
+      - min_select
+      - name_ar
+      - name_en
+      - options
+    ParkingLot:
+      type: object
+      properties:
+        name:
+          type: string
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+          readOnly: true
+        longitude:
+          type: number
+          format: double
+          readOnly: true
+        radius_m:
+          type: integer
+          readOnly: true
+      required:
+      - latitude
+      - longitude
+      - name
+      - radius_m
+    PasswordResetConfirmRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: The email address or the phone number, as the customer typed
+            it.
+          maxLength: 254
+        code:
+          type: string
+          minLength: 1
+          description: The six-digit code.
+          maxLength: 6
+          pattern: ^\d{6}$
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - code
+      - identifier
+      - new_password
+    PasswordResetRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: The email address or the phone number, as the customer typed
+            it.
+          maxLength: 254
+      required:
+      - identifier
+    PasswordResetSent:
+      type: object
+      properties:
+        code_expires_in_seconds:
+          type: integer
+      required:
+      - code_expires_in_seconds
+    ResendRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: The email address or the phone number, as the customer typed
+            it.
+          maxLength: 254
+      required:
+      - identifier
+    RestaurantDetail:
+      type: object
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name_en:
+          type: string
+          readOnly: true
+        name_ar:
+          type: string
+          readOnly: true
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        brand_colour:
+          type: string
+          description: A hex colour such as `#1A73E8`, or empty when none is set.
+        latitude:
+          type: number
+          format: double
+          readOnly: true
+        longitude:
+          type: number
+          format: double
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        parking_lot:
+          allOf:
+          - $ref: '#/components/schemas/ParkingLot'
+          readOnly: true
+        menu_images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuImage'
+          readOnly: true
+        menu:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuCategory'
+          readOnly: true
+      required:
+      - brand_colour
+      - currency
+      - latitude
+      - logo_url
+      - longitude
+      - menu
+      - menu_images
+      - name_ar
+      - name_en
+      - parking_lot
+      - slug
+    SentCode:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: The contact the code was sent to, normalised.
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+        code_expires_in_seconds:
+          type: integer
+          default: 600
+        resend_available_in_seconds:
+          type: integer
+          default: 60
+      required:
+      - channel
+      - identifier
+    Session:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 'Sent as `Authorization: Customer <token>`. Shown only here
+            and at sign-in.'
+        customer:
+          $ref: '#/components/schemas/CustomerProfile'
+      required:
+      - customer
+      - token
+    SignupRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Give this or phone.
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 1
+          description: Give this or email.
+          maxLength: 32
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        locale:
+          allOf:
+          - $ref: '#/components/schemas/LocaleEnum'
+          description: |-
+            The customer's language; the code message is written in it.
+
+            * `en` - English
+            * `ar` - Arabic
+      required:
+      - full_name
+      - locale
+      - password
+    VerifyRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: The email address or the phone number, as the customer typed
+            it.
+          maxLength: 254
+        code:
+          type: string
+          minLength: 1
+          description: The six-digit code.
+          maxLength: 6
+          pattern: ^\d{6}$
+      required:
+      - code
+      - identifier
+  securitySchemes:
+    customerAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Customer token, sent as `Customer <token>`. It is returned once,
+        when a sign-up is verified or a customer signs in.
