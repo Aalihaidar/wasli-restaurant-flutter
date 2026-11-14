@@ -135,13 +135,21 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
 - [x] Environments `staging` and `production` exist (read back 2026-11-13)
 - [ ] **Needs GitHub Pro:** restrict `staging` to `develop` and `production` to `main`, administrator bypass off
 - [ ] Add the web deploy secrets to the environments when the hosting is decided (Phase 6)
-- [ ] Backend contract check: repository variable `BACKEND_REPO` and secret `BACKEND_READ_TOKEN` (fine-grained,
-      read-only Contents on the backend repository only). Postponed to Phase 4: add them when `v0.1.0` is pinned,
-      otherwise the first weekly run opens an issue saying no release is pinned
+- [x] Backend contract check: repository variable `BACKEND_REPO` and secret `BACKEND_READ_TOKEN` (fine-grained,
+      read-only Contents on the backend repository only), added by the owner 2026-11-13 (they cannot be read through the
+      API, so this is taken from the owner)
+- [ ] Run **Backend contract** once by hand (Actions → Backend contract → Run workflow). Expected: green, "no published
+      release yet", because the backend's `v0.1.0` is still a draft (Phase 4)
+- [ ] Note the expiry date of `BACKEND_READ_TOKEN`; before it, replace the secret with a new token that has the same
+      read-only access (an expired token fails the weekly run on purpose)
 
 ## Phase 4: Backend contract and generated client (D1, backend `v0.1.0`), branch `feat/api-client`
 
-- [ ] `api/BACKEND_REPO` with the backend repository (`OWNER/REPO`)
+- [ ] Backend side (owner): publish the backend release `v0.1.0` with its `openapi.yaml` asset. On 2026-11-13 it is
+      still an unpublished draft without that asset (and the backend has no tags), so the contract cannot be pinned
+      from it yet and the weekly check finds no published release; until then pin with
+      `scripts/sync-api.sh --commit <sha>`
+- [x] `api/BACKEND_REPO` with the backend repository (`OWNER/REPO`)
 - [ ] `flutter pub add dio retrofit json_annotation`
 - [ ] `flutter pub add --dev build_runner json_serializable retrofit_generator swagger_parser`
 - [ ] Check whether `swagger_parser.yaml` can generate only this app's endpoints (staff and `config`); if not, generate

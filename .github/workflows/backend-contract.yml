@@ -11,7 +11,9 @@
 # backend). Without it the job is skipped, so the template and apps without a
 # backend are unaffected. A private backend also needs the secret
 # BACKEND_READ_TOKEN, a fine-grained token with read-only "Contents" access to
-# that one repository; a public backend needs nothing.
+# that one repository; a public backend needs nothing. The token expires: when it
+# does, the run fails on purpose instead of reporting "up to date". Create a new
+# fine-grained token with the same read-only access and replace the secret.
 #
 # Not part of "CI passed": it depends on another repository's state. It uses only
 # actions/checkout and the preinstalled GitHub CLI.
