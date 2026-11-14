@@ -2,10 +2,11 @@ import 'package:wasli_restaurant/core/error/api_error.dart';
 
 /// Why a request did not give the app what it asked for.
 ///
-/// A repository returns data or throws one of these; the UI maps each case to a localized message with an exhaustive
+/// A repository returns data or throws one of these (it is an [Exception], so it can be thrown and caught by type);
+/// the UI maps each case to a localized message with an exhaustive
 /// `switch` and never shows server text. The HTTP status decides the case; the [errors] only refine it. An
 /// unknown code is not a problem in itself, it just means the generic message of the case is shown.
-sealed class Failure {
+sealed class Failure implements Exception {
   const new({this.errors = const [], this.requestId});
 
   /// The entries of the server's error body, empty when the body was missing or not the standard shape.
