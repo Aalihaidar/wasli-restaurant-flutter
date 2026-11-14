@@ -133,7 +133,10 @@ Actions**):
 | Secret | `BACKEND_READ_TOKEN` | Only for a private backend: a fine-grained token with read-only *Contents* access to that one repository |
 
 A public backend needs no token. If the backend cannot be read, the run fails (red) instead of
-reporting "up to date". You can also start it by hand from **Actions → Backend contract**.
+reporting "up to date". Fine-grained tokens expire, so note the expiry date when you create the
+token. When it expires the run fails on purpose: create a new token with the same read-only access
+and replace the secret `BACKEND_READ_TOKEN`. You can also start the workflow by hand from
+**Actions → Backend contract**.
 
 ## 5. Where the app finds the server
 
