@@ -138,10 +138,12 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
 - [x] Backend contract check: repository variable `BACKEND_REPO` and secret `BACKEND_READ_TOKEN` (fine-grained,
       read-only Contents on the backend repository only), added by the owner 2026-11-13 (they cannot be read through the
       API, so this is taken from the owner)
-- [ ] Run **Backend contract** once by hand (Actions → Backend contract → Run workflow). Expected: green, "no published
-      release yet", because the backend's `v0.1.0` is still a draft (Phase 4)
-- [ ] Note the expiry date of `BACKEND_READ_TOKEN`; before it, replace the secret with a new token that has the same
-      read-only access (an expired token fails the weekly run on purpose)
+- [x] Run **Backend contract** once by hand (Actions → Backend contract → Run workflow). Done 2026-11-14: green in 9 s,
+      "no published release yet; nothing to compare", because the backend's `v0.1.0` is still a draft (Phase 4). The run
+      read the private backend with `BACKEND_READ_TOKEN`, so the variable and the token work
+- [x] Expiry of `BACKEND_READ_TOKEN`: the owner created it **without an expiry** (2026-11-14), so there is no date to
+      renew. It is read-only on the backend repository, so replace it only if it leaks or the backend repository
+      changes (an invalid token fails the weekly run on purpose)
 
 ## Phase 4: Backend contract and generated client (D1, backend `v0.1.0`), branch `feat/api-client`
 
