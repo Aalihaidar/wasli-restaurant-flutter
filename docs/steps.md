@@ -178,8 +178,13 @@ Each item is its own small pull request.
       `equatable`, no `riverpod_generator` (decided 2026-11-12)
 - [ ] `app/`: `bootstrap()`, `ProviderScope`, global error zone, router, app shell
 - [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
-- [ ] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
-      `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings)
+- [x] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
+      `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings); retry with backoff for reads only
+      (never a `429`, never a call that changes something); `guardRequest` turns a failed call into a `Failure`. The
+      Dio client takes the server address without a path (the generated paths start with `/api/v1`)
+- [ ] Decide the shape of `API_BASE_URL`: `env/staging.json`, `.env.example`, `.vscode/launch.json` and `AppEnvironment`
+      say the address includes `/api/v1`, but the generated paths already start with `/api/v1`, so the call would go to
+      `/api/v1/api/v1/config`. Change them to the address without a path (owner decision)
 - [x] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
       generic failure of the status)
 - [ ] `core/storage`: `TokenStore` interface; web interim implementation (memory first); `flutter_secure_storage`
