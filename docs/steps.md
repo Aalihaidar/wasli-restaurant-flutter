@@ -145,16 +145,19 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
 
 ## Phase 4: Backend contract and generated client (D1, backend `v0.1.0`), branch `feat/api-client`
 
-- [ ] Backend side (owner): publish the backend release `v0.1.0` with its `openapi.yaml` asset. On 2026-11-13 it is
-      still an unpublished draft without that asset (and the backend has no tags), so the contract cannot be pinned
-      from it yet and the weekly check finds no published release; until then pin with
-      `scripts/sync-api.sh --commit <sha>`
+- [x] **Decided (owner, 2026-11-14):** the backend keeps `v0.1.0` as a draft until the whole backend is finished (on
+      2026-11-13 it is an unpublished draft without the `openapi.yaml` asset, and the backend has no tags). Until a
+      release with that asset is published, this app pins the contract file `openapi/schema.yaml` by backend commit:
+      `scripts/sync-api.sh --commit <sha>`, which records the full SHA in `api/BACKEND_VERSION`. Both apps pin the same
+      commit, each through its own pull request. The weekly check finds no published release and does nothing until
+      then; pinning by release tag (`scripts/sync-api.sh vX.Y.Z`) starts once a release is published
 - [x] `api/BACKEND_REPO` with the backend repository (`OWNER/REPO`)
 - [ ] `flutter pub add dio retrofit json_annotation`
 - [ ] `flutter pub add --dev build_runner json_serializable retrofit_generator swagger_parser`
 - [ ] Check whether `swagger_parser.yaml` can generate only this app's endpoints (staff and `config`); if not, generate
       the whole client
-- [ ] `scripts/sync-api.sh v0.1.0` (writes `api/openapi.yaml`, `api/BACKEND_VERSION`, `lib/api`)
+- [ ] `scripts/sync-api.sh --commit <sha>` with the backend commit that holds the contract (writes `api/openapi.yaml`,
+      `api/BACKEND_VERSION`, `lib/api`)
 - [ ] Exclude `lib/api/**` from analysis if `flutter analyze --fatal-infos` reports generated code
 - [ ] **API client is current** job green in CI
 
