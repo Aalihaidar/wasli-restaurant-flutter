@@ -30,29 +30,17 @@ change` label is added automatically)
 
 ## Checklist
 
-- [ ] This PR targets `develop` (only the `develop` → `main` release PR
-targets `main`)
-- [ ] The **CI passed** check is green
-- [ ] `dart format`, `flutter analyze --fatal-infos` and `flutter test`
-pass locally
-- [ ] New or changed logic has tests (unit tests for domain logic,
-widget tests for screens)
-- [ ] A change to `api/openapi.yaml` includes the regenerated `lib/api` and
-names the backend release it was built against
-- [ ] Money is handled as integer minor units with a currency (no
-`double`), and times are UTC until they are displayed
-- [ ] No real customer, restaurant or personal data in code, tests,
-screenshots or logs
-- [ ] User-facing text is in the ARB files, and the UI keeps semantic
-labels, contrast and scalable text
-- [ ] New dependencies are pinned in `pubspec.yaml`, `pubspec.lock` is
-committed, and new GitHub Actions are pinned to a full commit SHA with a
-`# vX.Y.Z` comment
-- [ ] `README.md`, `docs/` and `docs/steps.md` are updated where the
-change affects them
-- [ ] The title is a Conventional Commit (labels are added from it and
-drive the release notes), or `skip-changelog` if this should not appear in
-them
+- [ ] Targets `develop` (only the release PR targets `main`)
+- [ ] **CI passed** is green
+- [ ] `dart format`, `flutter analyze --fatal-infos` and `flutter test` pass locally
+- [ ] New or changed logic has tests
+- [ ] A change to `api/openapi.yaml` includes the regenerated `lib/api` and the backend release
+- [ ] Money is integer minor units with a currency; times are UTC until displayed
+- [ ] No real customer, restaurant or personal data
+- [ ] User-facing text is in the ARB files; the UI keeps labels, contrast and scalable text
+- [ ] Dependencies are pinned and `pubspec.lock` is committed; new Actions are pinned to a SHA
+- [ ] `README.md`, `docs/` and `docs/steps.md` are updated where affected
+- [ ] The title is a Conventional Commit (or `skip-changelog`)
 
 ## Related issues
 
