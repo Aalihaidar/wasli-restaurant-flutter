@@ -19,9 +19,9 @@ Android, iOS and web.
 | --- | --- |
 | Flutter | 3.47.9 (stable) |
 | Dart | 3.13.7 |
-| Dev container image | `alihaidar199527/flutter-devcontainer:flutter-3.47.9.1` |
+| Dev container image | `alihaidar199527/flutter-devcontainer:flutter-3.50.0.1` |
 | Node.js (git tooling) | 24 |
-| pnpm | 12.14.0 |
+| pnpm | 12.21.0 |
 | Husky | 9.1.7 |
 | commitlint | 21.2.4 |
 
@@ -30,7 +30,8 @@ Application libraries and their exact versions are pinned in `pubspec.yaml` and
 
 ## Template
 
-Created from [`alihaidar0/flutter-template`](https://github.com/alihaidar0/flutter-template).
+Created from [`alihaidar0/flutter-template`](https://github.com/alihaidar0/flutter-template),
+release [`v2026.11.17`](https://github.com/alihaidar0/flutter-template/releases/tag/v2026.11.17).
 
 ## License
 
