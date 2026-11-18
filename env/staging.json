@@ -1,0 +1,5 @@
+{
+  "API_BASE_URL": "https://wasli-staging.onrender.com/api/v1",
+  "CUSTOMER_SITE_URL": "https://wasli-customer-staging.pages.dev",
+  "RESTAURANT_SITE_URL": "https://wasli-restaurant-staging.pages.dev"
+}

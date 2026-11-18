@@ -1,36 +1,47 @@
 ## Summary
 
-<!-- What does this PR change and why? -->
+<!-- What does this PR change and why? A few sentences, then bullets for the details a reviewer should look at. -->
 
 ## Type of change
 
-- [ ] Dev container / compose / VS Code configuration
-- [ ] GitHub Actions workflow / repository automation
-- [ ] Husky / commitlint / git hook
-- [ ] Dependency version bump
+- [ ] New feature
+- [ ] Bug fix
+- [ ] Refactor (no behaviour change)
+- [ ] Tests only
+- [ ] Backend contract bump (new pinned release in `api/`, regenerated `lib/api`)
+- [ ] Dependency or toolchain bump
+- [ ] CI / dev container / repository automation
 - [ ] Documentation only
 - [ ] Other (describe above)
 
 ## How it was verified
 
-<!-- Commands run and their result, or why CI alone is enough. -->
+<!-- Commands run and their result (format, analyze, test, boundaries, a manual run on web or the emulator), or why CI alone is enough. -->
+
+## Screenshots
+
+<!-- Invented data only. Write "Not applicable: no UI change." when there is none. -->
 
 ## Breaking change
 
-- [ ] This change forces projects generated from the template to adapt (use a `feat!:` or `fix!:` commit type and a `BREAKING CHANGE:` footer; the `breaking change` label is added automatically)
+- [ ] This change breaks existing data or behaviour (use a `feat!:` or
+`fix!:` commit type and a `BREAKING CHANGE:` footer; the `breaking
+change` label is added automatically)
 
 ## Checklist
 
-- [ ] This PR targets `develop` (only the `develop` → `main` release PR targets `main`)
-- [ ] The **CI passed** check is green
-- [ ] `ci.yml` still passes, and `build.yml` still skips, on a fresh (Tier 1) checkout, so the template never fails before a project exists
-- [ ] A change to `build.yml` or `release.yml` still builds staging for `develop` and production for `main` (test builds on pull requests, signed builds and draft releases on merges), keeps the signing secrets in the `build-android-signed` job only, and needs no edit in a generated project
-- [ ] No Flutter application code (`lib/`, `pubspec.yaml`, `android/`, `ios/`, `web/`) was introduced — this repo stays a zero-code template
-- [ ] New or updated GitHub Actions are pinned to a full commit SHA with a `# vX.Y.Z` comment, and any pinned version change is named in the PR title (see [CONTRIBUTING.md](../CONTRIBUTING.md))
-- [ ] Anything that must match the `flutter-devcontainer` image (pnpm and Node versions, aliases, image name) still does, or the image change is linked below
-- [ ] `README.md` and `CHANGELOG.md` describe the change where users would notice it
-- [ ] The title is a Conventional Commit (labels are added from it and drive the release notes), or `skip-changelog` if this should not appear in them
+- [ ] Targets `develop` (only the release PR targets `main`)
+- [ ] **CI passed** is green
+- [ ] `dart format`, `flutter analyze --fatal-infos` and `flutter test` pass locally
+- [ ] New or changed logic has tests
+- [ ] A change to `api/openapi.yaml` includes the regenerated `lib/api` and the backend release
+- [ ] Money is integer minor units with a currency; times are UTC until displayed
+- [ ] No real customer, restaurant or personal data
+- [ ] User-facing text is in the ARB files; the UI keeps labels, contrast and scalable text
+- [ ] Dependencies are pinned and `pubspec.lock` is committed; new Actions are pinned to a SHA
+- [ ] `README.md`, `docs/` and `docs/steps.md` are updated where affected
+- [ ] The title is a Conventional Commit (or `skip-changelog`)
 
 ## Related issues
 
-<!-- Closes #123 -->
+<!-- Closes #123, or "None." -->

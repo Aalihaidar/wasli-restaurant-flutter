@@ -23,7 +23,6 @@ build/
 **/ios/GoogleService-Info.plist
 
 # ── Web ───────────────────────────────────────────────────────────────────────
-lib/generated_plugin_registrant.dart
 
 # ── Secrets ───────────────────────────────────────────────────────────────────
 .env

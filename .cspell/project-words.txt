@@ -1,3 +1,4 @@
+aalihaidar
 adbdevices
 adbrestart
 alihaidar
@@ -22,6 +23,7 @@ fdoctor
 fformat
 fformatcheck
 fget
+fils
 flutterfire
 fromdateiso
 frun
@@ -49,6 +51,7 @@ publickey
 pubspec
 repomix
 rhysd
+riverpod
 shellcheck
 sshkey
 storetype
@@ -57,6 +60,8 @@ temurin
 tolower
 toupper
 userprofile
+wasli
+wasliresto
 xcodeproj
 yourcompany
 zizmor

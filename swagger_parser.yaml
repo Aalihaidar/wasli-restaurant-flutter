@@ -1,23 +1,37 @@
 # swagger_parser.yaml
 #
-# Configuration of the API client generator (https://pub.dev/packages/swagger_parser).
-# It is inert until a project adds the packages and pins a contract; the steps
-# are in docs/consuming-the-api.md. Generate with scripts/generate-api.sh.
+# Configuration of the API client generator (https://pub.dev/packages/swagger_parser),
+# written for swagger_parser 2.x. Generate with scripts/generate-api.sh.
 #
 # Never edit lib/api by hand: change this file or the contract and regenerate.
 swagger_parser:
-  # The contract pinned by scripts/sync-api.sh (a copy of a backend release).
+  # The contract pinned by scripts/sync-api.sh (a copy of the backend's OpenAPI file).
   schema_path: api/openapi.yaml
 
   # Committed, so a contract change shows up as a reviewable diff, and checked by
   # the "API client is current" job in ci.yml.
   output_directory: lib/api
 
-  language: dart
+  generation:
+    # Dio with Retrofit annotations; DTOs use json_serializable (built by build_runner).
+    http_client: retrofit
+    serializer: json_serializable
 
-  # json_serializable | freezed | dart_mappable. freezed and dart_mappable also
-  # need extra packages and a build.yaml (see the swagger_parser README).
-  json_serializer: json_serializable
+    # Same line width as the formatter (analysis_options.yaml).
+    page_width: 120
 
-  # One RestClient that groups the generated per-tag clients.
-  root_client: true
+    # A server enum can grow: an unknown value becomes an `Unknown` case instead of a crash.
+    unknown_enum_values: preserve
+
+    # Only this app's endpoints are generated: the public config and the staff endpoints (login, logout, orders).
+    # The customer endpoints (/customers/*, restaurants, conversations) belong to the customer app and are never called
+    # from here. A path that does not exist in the pinned contract yet (the staff paths before backend v0.3.0) matches
+    # nothing, so a new backend endpoint stays out of this client until it is listed here.
+    operation_filters:
+      include_paths:
+        - /api/v1/config
+        - /api/v1/auth/**
+        - /api/v1/staff/**
+
+    # Drop the models only the other endpoints use.
+    prune_unused_models: true
