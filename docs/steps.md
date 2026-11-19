@@ -114,6 +114,22 @@ Prepare these first ([`android-signing.md`](android-signing.md) sections 1 and 3
       into `main` build nothing; a merge into `main` builds the release once; a staging build is a manual run from `develop`
       (production only from `main`); the **Labels** workflow runs on `develop` only (`docs/environments.md`)
 
+### Checks for the build-once rule (tick each one the first time it is seen on GitHub)
+
+Each check is done by the work that normally happens anyway; write the date and the run or pull request next to the tick.
+Look at the **Actions** tab (or `gh run list`) and tick only what was seen.
+
+- [x] (a) A pull request that changes the build workflow runs **Build**, including the Android test builds, which proves
+      the `detect` step and its `pull-requests: read` permission (2026-11-19, pull request #12)
+- [ ] (b) A pull request that changes only documentation shows **no Build run**
+- [ ] (c) A pull request that changes only Dart code runs the web build and **skips** the two Android jobs
+- [x] (d) A merge into `develop` starts **no Build run** (2026-11-19, merge of #12: no Build run after it)
+- [ ] (e) **Actions, Build, Run workflow** from `develop` with `staging` works and refreshes the draft "Staging"
+- [ ] (f) A manual run of `production` from `develop`, or of `staging` from a topic branch, fails at once with the
+      "Wrong branch for this environment" message
+- [ ] (g) The release pull request `develop` → `main` runs **CI** only, no Build
+- [ ] (h) The merge of the release pull request into `main` runs **one** Build and fills the draft `v<version>`
+
 ## Phase 3: GitHub repository settings (after the first pull request has run CI)
 
 The repository is **private** on the **GitHub Free plan** (owner, 2026-11-13). Settings are changed by the owner in the
