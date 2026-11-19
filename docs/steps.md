@@ -121,7 +121,8 @@ Look at the **Actions** tab (or `gh run list`) and tick only what was seen.
 
 - [x] (a) A pull request that changes the build workflow runs **Build**, including the Android test builds, which proves
       the `detect` step and its `pull-requests: read` permission (2026-11-19, pull request #12)
-- [ ] (b) A pull request that changes only documentation shows **no Build run**
+- [x] (b) A pull request that changes only documentation shows **no Build run** (2026-11-19, pull request #13: **CI** and
+      **PR labels** ran, **Build** did not)
 - [ ] (c) A pull request that changes only Dart code runs the web build and **skips** the two Android jobs
 - [x] (d) A merge into `develop` starts **no Build run** (2026-11-19, merge of #12: no Build run after it)
 - [ ] (e) **Actions, Build, Run workflow** from `develop` with `staging` works and refreshes the draft "Staging"
