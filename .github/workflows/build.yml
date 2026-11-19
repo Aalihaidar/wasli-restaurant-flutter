@@ -1,13 +1,19 @@
 # .github/workflows/build.yml
 #
 # Builds the app artifacts (Android APKs, Android App Bundle, Web) for the two
-# environments of the branching model (docs/environments.md):
+# environments of the branching model (docs/environments.md). Every build has one
+# place where it runs, so nothing is built twice for the same change:
 #
-#   pull request into develop   staging      test build, debug key
-#   pull request into main      production   test build, debug key (the release PR)
-#   push to develop             staging      signed build + the rolling "Staging" draft release
+#   pull request into develop   staging      the web build always; the Android test
+#                                            builds (debug key) only when the pull request
+#                                            changes android/, pubspec.yaml or pubspec.lock
+#   pull request into main      -            nothing: the release pull request is checked
+#                                            by CI, and the build runs once, after the merge
+#   push to develop             -            nothing: run the build by hand when a staging
+#                                            build is wanted
 #   push to main                production   signed build + the draft release of the version
-#   manual run                  staging or production, your choice (signed)
+#   manual run                  staging or production (signed); staging only from develop,
+#                                            production only from main
 #
 # The environment names are also the Android flavors, the GitHub environments and
 # the APP_ENV value: every build passes --dart-define=APP_ENV=<environment> (web
@@ -26,16 +32,19 @@
 #   - Pull request builds are test builds signed with the debug key; they never
 #     see a secret. When the project applies the Google services plugin, a test
 #     build gets a placeholder google-services.json with invented values.
-#   - Signed builds (a push, or a manual run) use the key of their GitHub
-#     environment (docs/android-signing.md). The `staging` environment is
-#     restricted to develop and the `production` one to main, so no other branch
-#     can read the keys. Each build is obfuscated and gives one APK per CPU type
-#     plus the App Bundle; the job checks the signature of every file. The build
+#   - Signed builds (a push to main, or a manual run) use the key of their GitHub
+#     environment (docs/android-signing.md). The `staging` environment is meant
+#     for develop and the `production` one for main. Where GitHub cannot restrict
+#     an environment to a branch (private repository on the Free plan), the
+#     "Resolve the build environment" step refuses a manual run from any other
+#     branch; that stops a mistake, it is not a security boundary. Each build is
+#     obfuscated and gives one APK per CPU type plus the App Bundle; the job
+#     checks the signature of every file. The build
 #     number is the run number of this workflow, so it only ever increases. With
 #     the Google services plugin, the environment's secret
 #     GOOGLE_SERVICES_JSON_BASE64 provides the real google-services.json.
 #   - The files go into a draft GitHub Release: "Staging" (tag staging, replaced
-#     by every build on develop, never published) or v<version> from pubspec.yaml
+#     by every manual staging build, never published) or v<version> from pubspec.yaml
 #     (1.4.0+7 -> v1.4.0; a new build of the same version replaces its files; you
 #     publish it when it is final). A published release is immutable, so it is
 #     left alone (the build warns) and the next release needs a higher version.
@@ -55,7 +64,6 @@ name: Build
 on:
   pull_request:
     branches:
-      - main
       - develop
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
@@ -68,10 +76,11 @@ on:
       - "ios/**"
       - "web/**"
       - ".github/workflows/build.yml"
+  # Only main builds by itself: a merge into main is a release and builds once.
+  # A merge into develop does not build; start the build by hand (workflow_dispatch).
   push:
     branches:
       - main
-      - develop
     paths:
       - "lib/**"
       - "assets/**"
@@ -85,7 +94,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to build for"
+        description: "Environment to build (staging only from develop, production only from main)"
         type: choice
         options:
           - staging
@@ -107,9 +116,15 @@ jobs:
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-26.04
     timeout-minutes: 5
+    # pull-requests: read lists the files of a pull request (step "Decide whether
+    # the Android test builds are needed").
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       ready: ${{ steps.check.outputs.ready }}
       environment: ${{ steps.environment.outputs.environment }}
+      android_changed: ${{ steps.android-scope.outputs.android_changed }}
       flutter_version: ${{ steps.flutter-version.outputs.version }}
       flavors: ${{ steps.project.outputs.flavors }}
       google_services: ${{ steps.project.outputs.google_services }}
@@ -138,25 +153,67 @@ jobs:
             echo "No pubspec.yaml / pubspec.lock — skipping all builds"
           fi
 
+      # The environment follows the event: a pull request builds staging, a push
+      # to main builds production. A manual run builds the chosen environment, but
+      # only from its own branch (staging from develop, production from main): the
+      # signing secrets of an environment are meant for one branch, and a private
+      # repository on the Free plan cannot enforce that in the environment settings.
       - name: Resolve the build environment
         id: environment
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_REF: ${{ github.base_ref }}
           REF_NAME: ${{ github.ref_name }}
           INPUT_ENVIRONMENT: ${{ inputs.environment }}
         run: |
           case "$EVENT_NAME" in
             pull_request)
-              if [[ "$BASE_REF" == "main" ]]; then target="production"; else target="staging"; fi ;;
+              target="staging" ;;
             workflow_dispatch)
-              target="$INPUT_ENVIRONMENT" ;;
+              target="$INPUT_ENVIRONMENT"
+              case "${target}:${REF_NAME}" in
+                staging:develop | production:main) ;;
+                *)
+                  echo "::error title=Wrong branch for this environment::A manual ${target} build runs only from the branch of that environment (staging: develop, production: main), not from ${REF_NAME}. Choose the branch in the Run workflow dialog."
+                  exit 1 ;;
+              esac ;;
             *)
               if [[ "$REF_NAME" == "main" ]]; then target="production"; else target="staging"; fi ;;
           esac
           case "$target" in staging|production) ;; *) target="staging" ;; esac
           echo "environment=$target" >> "$GITHUB_OUTPUT"
           echo "Building for: $target"
+
+      # Pull requests only. The Android test builds are the slowest part of a pull
+      # request build, and Dart-only changes rarely break them (format, analyze with
+      # the web-library lint, test and the web build cover the Dart code; the signed
+      # build after the merge into main, or a manual staging run, catches the rest),
+      # so they run only when the pull request changes something Android compiles:
+      # android/, pubspec.yaml, pubspec.lock, or this workflow or the Flutter setup
+      # action it uses. Any other event
+      # (push, manual run) does not use this value. If the file list cannot be
+      # read, the safe answer is to build.
+      - name: Decide whether the Android test builds are needed
+        id: android-scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          android_changed=true
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            if files="$(gh api --paginate "repos/${GH_REPO}/pulls/${PR_NUMBER}/files?per_page=100" --jq '.[].filename')"; then
+              if grep -Eq '^(android/|pubspec\.(yaml|lock)$|\.github/workflows/build\.yml$|\.github/actions/setup-flutter/)' <<< "$files"; then
+                android_changed=true
+              else
+                android_changed=false
+              fi
+            else
+              echo "::warning::The files of the pull request could not be listed; the Android test builds run to be safe."
+            fi
+          fi
+          echo "android_changed=$android_changed" >> "$GITHUB_OUTPUT"
+          echo "android_changed=$android_changed"
 
       # A project pins its Flutter version in pubspec.yaml (environment: flutter:
       # 3.x.y), so CI keeps building with it. Without a pin, the newest stable
@@ -271,14 +328,17 @@ jobs:
           retention-days: ${{ github.event_name == 'pull_request' && 14 || 30 }}
 
   # ── Android test builds (debug key) ──────────────────────────────────────
-  # Pull requests only. Signed with the debug key, so they are for testing and
-  # need no secret. Signed builds run on pushes and manual runs (below).
+  # Pull requests only, and only when the pull request changes what Android
+  # compiles (see "Decide whether the Android test builds are needed"). Signed
+  # with the debug key, so they are for testing and need no secret. Signed builds
+  # run after a merge into main and on manual runs (below).
   build-android-test:
     name: ${{ matrix.name }} (${{ needs.detect.outputs.environment }}, debug key)
     needs: detect
     if: >-
       needs.detect.outputs.ready == 'true' &&
       needs.detect.outputs.flavors == 'true' &&
+      needs.detect.outputs.android_changed == 'true' &&
       github.event_name == 'pull_request'
     runs-on: ubuntu-26.04
     timeout-minutes: 25
@@ -375,9 +435,10 @@ jobs:
 
   # ── Android signed build ─────────────────────────────────────────────────
   # The only job that reads the signing secrets. It runs in the GitHub
-  # environment named after the build environment (staging or production); each
-  # environment is restricted to one branch, so a pull request or another branch
-  # never gets the keys.
+  # environment named after the build environment (staging or production). It runs
+  # only after a merge into main or on a manual run, never for a pull request, and
+  # a manual run is refused from the wrong branch (see "Resolve the build
+  # environment"), so a pull request or another branch never gets the keys.
   build-android-signed:
     name: Android signed (${{ needs.detect.outputs.environment }})
     needs: detect
@@ -593,8 +654,8 @@ jobs:
         run: rm -f android/key.*.properties "$RUNNER_TEMP/signing-keystore.jks" android/app/src/*/google-services.json
 
   # ── Draft GitHub Release ─────────────────────────────────────────────────
-  # Staging: the single draft "Staging" (tag staging), refreshed by every build on
-  # develop and never published. Production: the draft v<version>. Either way it
+  # Staging: the single draft "Staging" (tag staging), refreshed by every manual
+  # staging build and never published. Production: the draft v<version>. Either way it
   # gets the signed APKs, the App Bundle, the checksums and the web build. This job
   # has no access to the signing secrets. Publishing the production draft is a
   # manual click on the Releases page; a published release is immutable and is
@@ -662,7 +723,7 @@ jobs:
             tag="staging"
             title="Staging"
             prerelease=true
-            body="$(printf 'Staging build %s of version %s, built from commit %s on the develop branch.\n\nEvery merge into develop replaces the files of this draft. Do not publish it.\n' \
+            body="$(printf 'Staging build %s of version %s, built from commit %s on the develop branch.\n\nEvery manual staging build replaces the files of this draft. Do not publish it.\n' \
               "$BUILD_NUMBER" "$version" "$TARGET_SHA")"
           fi
 

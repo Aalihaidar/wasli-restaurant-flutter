@@ -88,6 +88,10 @@ to `.cspell/project-words.txt`, lowercase and in alphabetical order.
   `run:` scripts through `env:`, never inline.
 - Only the signed Android build job may use the signing secrets, and only the release-draft job may have
   `contents: write`.
+- Every build runs in one place and is never repeated for the same change: a pull request into `develop` builds the
+  web app (and the Android test builds when it changes `android/` or `pubspec.*`), a merge into `develop` and a pull
+  request into `main` build nothing, a merge into `main` builds the release, and a staging build is started by hand
+  (Actions → Build → Run workflow). Keep a new workflow to the same rule. Details: `docs/environments.md`.
 
 ## Bugs and feature requests
 

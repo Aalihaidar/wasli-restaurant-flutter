@@ -59,8 +59,8 @@ Guides used by these steps: [`README.md`](../README.md) (sections 2, 3, 7 and 9)
 - [x] **Decide** the lint set: `very_good_analysis` (decided 2026-11-12)
 - [x] `flutter pub add --dev very_good_analysis`; strict `analysis_options.yaml` that includes it, with `strict-casts`,
       `strict-inference`, `strict-raw-types`, formatter width 120 and `lib/api/**` excluded when it is generated
-- [x] Boundary check: `scripts/check-boundaries.sh` written (make it executable, run it, then add it to `ci.yml`) for the folder rules (`core`, `theme`, `api` never import `features` or `app`;
-      features never import each other's `data`/`presentation`), run in CI
+- [x] Boundary check: `scripts/check-boundaries.sh` for the folder rules (`core`, `theme`, `api` never import `features`
+      or `app`; features never import each other's `data`/`presentation`), run in CI as the **Folder boundaries** job
 - [x] Web entry point uses `usePathUrlStrategy()`
 - [x] Replace the generated counter app with a minimal placeholder page (`lib/main.dart` calls `bootstrap()`) and one
       passing test in `test/`
@@ -89,23 +89,30 @@ Guides used by these steps: [`README.md`](../README.md) (sections 2, 3, 7 and 9)
 
 ### Android signing and environments (before the merge)
 
-With the flavors in place, a merge into `develop` runs the signed staging build, which stops without its keys.
+With the flavors in place, a merge into `main` and a manual staging run build signed files, which stop without their keys.
 Prepare these first ([`android-signing.md`](android-signing.md) sections 1 and 3):
 
 - [ ] Two keystores outside the repo (or in the ignored `.signing/`) with distinctive aliases
       (`wasliresto-staging`, `wasliresto-upload`), each with its own password; both **backed up** in a password manager
 - [ ] `android/key.staging.properties` and `android/key.production.properties` locally (ignored by Git)
-- [ ] GitHub environments `staging` (only `develop`) and `production` (only `main`), administrator bypass off, created
-      **before** the first build that names them
-- [ ] In each environment: secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_STORE_PASSWORD`, `ANDROID_KEY_PASSWORD`,
-      `ANDROID_KEY_ALIAS` and the variable `ANDROID_CERT_SHA256` (public fingerprint)
+- [x] GitHub environments `staging` and `production` exist (the branch restriction and administrator bypass off need
+      GitHub Pro, Phase 3)
+- [x] In each environment: secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_STORE_PASSWORD`, `ANDROID_KEY_PASSWORD`,
+      `ANDROID_KEY_ALIAS` and the variable `ANDROID_CERT_SHA256` (public fingerprint); the signed builds on `develop`
+      and `main` pass, so the values work (the secrets themselves are not readable through the API)
 
 ### Merge
 
-- [ ] Pull request into `develop`; **CI passed** green; web, APK and AAB test builds produced by `build.yml`
-- [ ] Merged with **Create a merge commit**
-- [ ] Signed staging build succeeded, the draft release "Staging" holds three APKs and the App Bundle; signature checked
-      with `apksigner`
+- [x] Pull request into `develop` (#1); **CI passed** green; web, APK and AAB test builds produced by `build.yml`
+- [x] Merged with **Create a merge commit**
+- [x] Signed staging build succeeded, the draft release "Staging" holds three APKs, the App Bundle and the web zip;
+      `build.yml` verifies the signature with `apksigner`
+- [x] First release: `develop` promoted to `main` (#11, 2026-11-18), signed production build green, draft release
+      `v0.1.0` filled with the same files; nothing published (draft)
+- [x] Build once per purpose (branch `ci/build-once-per-purpose`): a pull request into `develop` builds the web app, and the
+      Android test builds only when it changes `android/` or `pubspec.*`; a merge into `develop` and the release pull request
+      into `main` build nothing; a merge into `main` builds the release once; a staging build is a manual run from `develop`
+      (production only from `main`); the **Labels** workflow runs on `develop` only (`docs/environments.md`)
 
 ## Phase 3: GitHub repository settings (after the first pull request has run CI)
 
@@ -166,8 +173,11 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
       `config` client, since the pinned contract has no staff endpoint yet). `info.version` in the pinned file reads
       `0.1.0`
 - [x] `lib/api/**` is excluded from analysis (since Phase 2); `flutter analyze --fatal-infos` reports nothing
-- [ ] Commit `api/` and `lib/api` together; the **API client is current** job is green
+- [x] Commit `api/` and `lib/api` together (#6); the **API client is current** job is green
 - [ ] Fixture for `GET /config` with invented values taken from the contract example
+- [ ] Optional: move the pin from `a4f8591` to the current backend `develop` head in its own pull request
+      (`scripts/sync-api.sh --commit <sha>`). The customer app pins `ac60db8`; the contract change in between
+      (`nearest` optional on `restaurants/nearby`) is outside this client's paths, and the backend has no staff path yet
 - [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
       in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
@@ -308,7 +318,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 
 ## Backend requests (API request issues in the backend repository)
 
-- [ ] Order type (`car`, `dine_in`, `delivery`) on the staff order object, before D3 freezes it
+- [x] Order type (`car`, `dine_in`, `delivery`) on the staff order object, before D3 freezes it: agreed with the backend
+      on 2026-11-14 and part of its API request issue #52 (open; the staff part is built with D3)
 - [ ] Staff token expiry and rotation, per-device staff tokens
 - [ ] HttpOnly cookie session for the web once a custom domain exists
 - [ ] `min_app_version` in `/config` before any native app ships
