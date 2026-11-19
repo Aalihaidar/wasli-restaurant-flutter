@@ -144,6 +144,9 @@ Android test APKs, and the web build is always there.
    with **Create a merge commit**.
 5. **Build** runs once on `main` and fills the draft `v<version>`; publish it when final.
 
+The checks that show the rules above working on GitHub are listed in `docs/steps.md`
+("Checks for the build-once rule"); each one is ticked the first time it is seen.
+
 A signed build produces one APK per CPU type (`arm64-v8a`, `armeabi-v7a`, `x86_64`),
 the App Bundle, a checksum file and the web build. It is obfuscated, and the job checks
 that every file is signed with the right key. Nothing publishes by itself: the drafts
