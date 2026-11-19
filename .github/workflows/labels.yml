@@ -1,10 +1,11 @@
 # .github/workflows/labels.yml
 #
 # Keeps the repository's labels identical to .github/labels.yml (labels as code).
-# Runs when that file changes on develop (the default branch) or main, which
-# includes the first commit of a repository created from the template, so the
-# labels exist before the first pull requests. Run it on demand only if they
-# are missing.
+# Runs when that file changes on develop (the default branch), which includes the
+# first commit of a repository created from the template, so the labels exist
+# before the first pull requests. Labels belong to the repository, not to a
+# branch, so the release merge into main does not run it a second time. Run it on
+# demand only if they are missing.
 # Labels not listed in the file are left alone.
 name: Labels
 
@@ -12,7 +13,6 @@ on:
   push:
     branches:
       - develop
-      - main
     paths:
       - ".github/labels.yml"
   workflow_dispatch:

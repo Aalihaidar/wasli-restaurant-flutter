@@ -10,12 +10,18 @@ its own signing key, GitHub environment and release.
 | Flutter flavor, GitHub environment and `APP_ENV` | `staging` | `production` |
 | Android application ID | `com.yourcompany.myapp.staging` | `com.yourcompany.myapp` |
 | Signing key | the staging key | the production (upload) key |
-| GitHub environment | `staging`, restricted to `develop` | `production`, restricted to `main` |
+| GitHub environment | `staging`, meant for `develop` | `production`, meant for `main` |
 | Release | the draft "Staging" (tag `staging`) | the draft `v<version>` |
 
 The production ID has no suffix because it is the ID of the app in the stores and
 cannot be changed once published. The signing keys are described in
 [`android-signing.md`](android-signing.md).
+
+GitHub can restrict an environment to one branch (**Deployment branches and tags**), but
+a private repository needs a paid plan for it. Where it is not available, the **Build**
+workflow refuses a manual run from the wrong branch (staging only from `develop`,
+production only from `main`). That stops a mistake; it is not a security boundary, so
+restrict the environments in GitHub as soon as the plan allows it.
 
 The flavors are not in the template (`flutter create` makes the `android/` folder), so
 you set them up once, right after `flutter create`: the Gradle file is in
@@ -89,15 +95,54 @@ flutter build appbundle --release --flavor production
 
 ## What the build does
 
-The **Build** workflow (`.github/workflows/build.yml`) decides by event:
+The **Build** workflow (`.github/workflows/build.yml`) decides by event. Every build runs
+in exactly one place, so a change is never built again after its merge:
 
 | Event | Result |
 | --- | --- |
-| Pull request into `develop` | Staging test build (debug key, no secrets), kept 14 days |
-| Merge into `develop` | Signed staging build; its files replace those of the draft release "Staging" |
-| Pull request into `main` | Production test build (debug key, no secrets), kept 14 days; test this one before merging |
+| Pull request into `develop` | The staging web build, kept 14 days. The Android test builds (APK and AAB, debug key, no secrets, kept 14 days) run only when the pull request changes `android/`, `pubspec.yaml`, `pubspec.lock` or the build workflow itself |
+| Merge into `develop` | Nothing is built. Start the build by hand when a staging build is wanted (below) |
+| Pull request into `main` (the release) | Nothing is built. **CI** checks it; the build runs once, after the merge |
 | Merge into `main` | Signed production build; its files go into the draft release `v<version>` |
-| Manual run (Actions → Build → Run workflow) | Signed build of the chosen environment, from `develop` for staging or `main` for production |
+| Manual run (Actions → Build → Run workflow) | Signed build of the chosen environment: `staging` only from `develop`, `production` only from `main`. Any other branch fails at once with a message |
+
+A draft pull request, and a change that touches only documentation (no file under `lib/`,
+`assets/`, `env/`, `android/`, `ios/`, `web/` or `pubspec.*`), builds nothing.
+
+**Why it is split this way.**
+
+- A pull request build answers "does this change still compile?". Dart code is already
+  checked by format, analyze (including the lint against web-only libraries), test and
+  the web build, and it rarely breaks the Android build, so a pull request that changes
+  only Dart code skips the slowest part of the build, the Android test builds. Native
+  changes (`android/`, plugins in `pubspec.*`) still get them, and anything the skip
+  misses shows in the signed build after the merge into `main` or in a manual staging
+  run, before anything is published.
+- A signed build is something you ship, so it runs when you ship: after a merge into
+  `main`, or when you start it by hand for staging. The merge into `develop` would only
+  repeat what the pull request already built.
+- The release pull request into `main` adds no build: `develop` is already verified by
+  its own pull requests and **CI** runs again on the release pull request, which is the
+  first check of the integrated `develop`. The signed production build follows the
+  merge. Nothing is published by it (the release stays a draft), so a failed production
+  build costs nothing: fix it through a new pull request, or release the previous tag.
+- Concurrency: a new push to a pull request cancels its running build; a build on
+  `main` or a manual build is never cancelled halfway, because it ends in a release.
+
+**Start a staging build by hand.** Actions → Build → Run workflow, branch `develop`,
+environment `staging`; or, from a terminal, `gh workflow run build.yml --ref develop -f
+environment=staging`. It refreshes the draft "Staging". To try a branch on a phone before
+it is merged, open its pull request: a change to `android/` or `pubspec.*` produces the
+Android test APKs, and the web build is always there.
+
+**Releasing, in order.**
+
+1. Merge the feature pull requests into `develop` (each one had **CI** and its build).
+2. Optional: run the staging build by hand from `develop` and test the signed files.
+3. Raise `version:` in `pubspec.yaml` (a pull request into `develop`).
+4. Open the release pull request `develop` → `main`; wait for **CI passed**; merge it
+   with **Create a merge commit**.
+5. **Build** runs once on `main` and fills the draft `v<version>`; publish it when final.
 
 A signed build produces one APK per CPU type (`arm64-v8a`, `armeabi-v7a`, `x86_64`),
 the App Bundle, a checksum file and the web build. It is obfuscated, and the job checks
@@ -128,7 +173,8 @@ builds. The release name comes from the version in `pubspec.yaml` without the bu
 number, and the release notes show the build number and the commit.
 
 **Staging release.** One draft called "Staging" (tag `staging`) holds the files of the
-latest build on `develop`. Every merge replaces its files and notes. Never publish it:
+latest manual staging build on `develop`. Every manual staging build replaces its files
+and notes. Never publish it:
 a published release is immutable, and the build would then leave it alone. GitHub
 renames the tag of a draft once the draft has been updated (to `untagged-…`), so the
 build finds a draft by its tag or by its title. If more than one release matches, the

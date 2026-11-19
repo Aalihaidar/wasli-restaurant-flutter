@@ -14,13 +14,16 @@ the guides for your Flutter version.
 
 | Build | Signed with | Produces |
 | --- | --- | --- |
-| Pull request | the debug key (test build, no secret) | one APK and one App Bundle, kept 14 days |
-| Push to `develop`, or manual staging run | the staging key | signed APKs and App Bundle in the draft release "Staging" |
-| Push to `main`, or manual production run | the production key | signed APKs and App Bundle in the draft release `v<version>` |
+| Pull request that changes `android/` or `pubspec.*` | the debug key (test build, no secret) | one APK and one App Bundle, kept 14 days |
+| Manual staging run (from `develop`) | the staging key | signed APKs and App Bundle in the draft release "Staging" |
+| Push to `main`, or manual production run (from `main`) | the production key | signed APKs and App Bundle in the draft release `v<version>` |
 
-Only the signing job reads the secrets. Each GitHub environment is restricted to one
-branch, so a pull request or another branch can never read a key. Keeping two keys means
-a leak of the staging key cannot sign a production build.
+Only the signing job reads the secrets, and it never runs for a pull request. Each GitHub
+environment is meant for one branch: restrict it to that branch under **Deployment
+branches and tags** where the plan allows it (a private repository needs a paid plan).
+Where it does not, **Build** refuses a manual run from the wrong branch, which stops a
+mistake but is not a security boundary. Keeping two keys means a leak of the staging key
+cannot sign a production build.
 
 ## 1. Create the two keystores (once, on your machine)
 
@@ -193,16 +196,17 @@ With the variable set, a build fails if any file is signed with another key. Wit
 the build still fails for the debug key and prints the fingerprint in the run summary.
 
 If a secret is missing, the signing job stops with a message naming it, before anything
-is built. Set the environments up before the first merge into `develop` of an app whose
-flavors exist.
+is built. Set the environments up before the first manual staging build or the first
+merge into `main` of an app whose flavors exist.
 
 ## 4. Builds and releases
 
 [`environments.md`](environments.md) describes what each event builds and how the draft
-releases work. In short: a merge into `develop` refreshes the draft "Staging", and a
-merge into `main` refreshes the draft `v<version>`, which you publish when it is final.
-The first production build comes with the first pull request from `develop` into `main`,
-so set up section 3 before it. The signed files are also kept for 30 days as the workflow
+releases work. In short: a manual staging build (Actions → Build → Run workflow, from
+`develop`) refreshes the draft "Staging", and a merge into `main` refreshes the draft
+`v<version>`, which you publish when it is final. Nothing is built for a merge into
+`develop` or for the release pull request. The first production build comes with the
+first merge of `develop` into `main`, so set up section 3 before it. The signed files are also kept for 30 days as the workflow
 artifact `android-release-signed-<environment>`.
 
 Raise the version in `pubspec.yaml` for every new release. The build number needs no
