@@ -270,8 +270,10 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
       while visible; backoff on 429/5xx honouring `Retry-After`
 - [ ] Merge orders by id and `server_time` without rebuilding the whole list
 - [ ] Orders list (new first, highlighted) and the "Decided" section
-- [ ] Distance badge from `distance_band` (`in_lot`, `near`, `far`, `unknown`), distance, accuracy, age of the position
-- [ ] Small map with the restaurant and the customer (`flutter_map`, OpenStreetMap on staging only)
+- [ ] Distance badge from `distance_band` (`in_lot` within the restaurant's service distance, `near`, `far`, `unknown`),
+      always with the distance in metres, accuracy, age of the position
+- [ ] Small map with the restaurant and the customer (`flutter_map`, OpenStreetMap on staging only), and a circle of
+      `service_radius_m` around the restaurant when `GET /staff/me` sends it
 - [ ] Accept dialog: 5, 10 or 15 minutes; button disabled while sending; never auto-retried
 - [ ] Reject dialog: reason (preselect `too_far` on `far`, `location_unclear` on `unknown`), note required for `other`,
       at most 200 characters
