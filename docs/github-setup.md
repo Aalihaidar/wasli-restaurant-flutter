@@ -25,6 +25,25 @@ feat/*  fix/*  docs/*  ci/*  chore/*  deps/*
 
 A pull request into `main` from any branch other than `develop` fails the **Verify source branch** job. GitHub rulesets cannot restrict a pull request's source branch, so the rule is enforced in `ci.yml` and made mandatory through the required **CI passed** check.
 
+## Repository visibility
+
+A project normally lives as a **private** repository on the GitHub Free plan. Several settings below depend on the
+visibility, so this table says what each one needs. Whenever the visibility changes, read the settings back (section 7)
+and update this page and `docs/steps.md` in the same pull request.
+
+| Setting | Public | Private on the Free plan |
+| --- | --- | --- |
+| Rulesets (section 5) | Enforced | Need a paid plan; rulesets made while public stop being enforced: protect `develop` and `main` by discipline and the local `pre-push` hook |
+| Environment deployment branches (section 3) | Available | Not available: `build.yml` refuses a manual run from the wrong branch instead |
+| Secret scanning and push protection, CodeQL, private vulnerability reporting (section 4) | Available | Not available (they need GitHub Pro or a public repository) |
+| Fork pull request approval (section 2) | Available | Not offered |
+| Actions minutes | Free for standard runners | A monthly allowance, then builds stop until it renews or is raised |
+
+**Status:** the repository was made public on 2026-11-20 because the monthly Actions allowance of the private
+repository ran out, and it is expected to become private again later. While it is public, everything in it and its
+history can be read by anyone: commit only public values and never a secret (see `SECURITY.md`). Making it private
+again does not unpublish what was already copied or forked.
+
 ## 1. Settings → General
 
 | Setting | Value |
@@ -83,7 +102,7 @@ The template needs **no secrets and no environments**: CI and the pull-request b
 | Dependabot version updates | Driven by `.github/dependabot.yml` (weekly, grouped, 7-day cooldown, pull requests to `develop`) |
 | Secret scanning | On |
 | Push protection | **On** |
-| Private vulnerability reporting | **On** (`SECURITY.md` links to it) |
+| Private vulnerability reporting | **On** while the repository is public (`SECURITY.md` links to it and says what to do when the option is not shown) |
 | Code scanning → CodeQL | Default setup, language **Actions** (analyses the workflow files; CodeQL does not cover Dart) |
 
 ## 5. Rulesets

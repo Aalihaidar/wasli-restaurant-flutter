@@ -133,9 +133,12 @@ Look at the **Actions** tab (or `gh run list`) and tick only what was seen.
 
 ## Phase 3: GitHub repository settings (after the first pull request has run CI)
 
-The repository is **private** on the **GitHub Free plan** (owner, 2026-11-13). Settings are changed by the owner in the
-web UI; they are read back with read-only `gh` calls. Items marked **needs GitHub Pro** are not offered on a private
-repository without a paid plan (rulesets, environment branch rules, secret scanning, CodeQL).
+The repository is normally **private** on the **GitHub Free plan** (owner, 2026-11-13). It was made **public on
+2026-11-20** because the monthly Actions allowance ran out, and it will become private again later. Settings are changed
+by the owner in the web UI; they are read back with read-only `gh` calls. Items marked **needs GitHub Pro (or public)**
+are only available while the repository is public (rulesets, environment branch rules, secret scanning, CodeQL, private
+vulnerability reporting). When the repository becomes private again, read these settings back and update this list and
+[`github-setup.md`](github-setup.md) ("Repository visibility").
 
 - [x] **General**: default branch `develop`; template repository off; merge commits on, squash and rebase off; suggest
       updating branches, auto-merge and delete head branches on; wiki, projects and discussions off (read back 2026-11-13)
@@ -143,21 +146,26 @@ repository without a paid plan (rulesets, environment branch rules, secret scann
       `zizmorcore/zizmor-action@*`, `google/osv-scanner-action/*`; Marketplace verified creators off); full-SHA pinning
       required; read-only workflow permissions; Actions may not create or approve pull requests; 30-day retention (read
       back 2026-11-13)
-- [ ] Fork pull request approval: GitHub does not allow the setting on a private repository; set it if the repository
-      is ever made public
+- [x] Fork pull request approval: all external contributors (read back 2026-11-20, while the repository is public;
+      GitHub does not offer the setting on a private repository)
 - [x] **Code security, free part**: Dependabot alerts on (read back 2026-11-13)
-- [ ] **Code security, rest**: confirm the dependency graph and Dependabot security updates are on (not readable by
-      the API on a private repository)
-- [ ] **Needs GitHub Pro (or public):** secret scanning with push protection, private vulnerability reporting, CodeQL
-      default setup (language Actions)
-- [ ] **Needs GitHub Pro (or public):** import the rulesets `main-protect`, `develop-protect`, `tags-protect`
-      ([`github-setup.md`](github-setup.md) section 5). Until then `develop` and `main` are protected only by the local
-      `pre-push` hook and by never pushing to them
+- [x] **Code security, rest**: Dependabot security updates on (read back 2026-11-20); the dependency graph is not
+      readable separately by the API
+- [x] **Needs GitHub Pro (or public):** secret scanning with push protection on, private vulnerability reporting on,
+      CodeQL default setup configured for the language Actions (read back 2026-11-20, repository public). They stop
+      being available when the repository is private again
+- [x] **Needs GitHub Pro (or public):** rulesets `main-protect`, `develop-protect`, `tags-protect` imported and active,
+      with an empty bypass list (read back 2026-11-20; [`github-setup.md`](github-setup.md) section 5). While the
+      repository is private on the Free plan, `develop` and `main` are protected only by the local `pre-push` hook and
+      by never pushing to them
 - [ ] **Needs GitHub Pro (or public):** verify the protection ([`github-setup.md`](github-setup.md) section 7): direct
       pushes to `main`/`develop` are rejected, a topic branch into `main` fails **Verify source branch**,
       `Fixed stuff` fails **Commit messages**
 - [x] Environments `staging` and `production` exist (read back 2026-11-13)
-- [ ] **Needs GitHub Pro:** restrict `staging` to `develop` and `production` to `main`, administrator bypass off
+- [x] **Needs GitHub Pro (or public):** `staging` restricted to `develop` and `production` to `main` (read back
+      2026-11-20, repository public)
+- [ ] Administrator bypass is still on for both environments (read back 2026-11-20): untick **Allow administrators to
+      bypass configured protection rules**
 - [ ] Add the web deploy secrets to the environments when the hosting is decided (Phase 6)
 - [x] Backend contract check: repository variable `BACKEND_REPO` and secret `BACKEND_READ_TOKEN` (fine-grained,
       read-only Contents on the backend repository only), added by the owner 2026-11-13 (they cannot be read through the
