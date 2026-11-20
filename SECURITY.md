@@ -34,8 +34,9 @@ Only the latest release of the app and the latest commit on `develop` are suppor
 
 **Please do not open a public issue for a security vulnerability.**
 
-Report it privately through GitHub:
-**Security → Report a vulnerability** on this repository (private vulnerability reporting). Include:
+Report it privately through GitHub: open **Security → Report a vulnerability** on this repository (private
+vulnerability reporting). If that option is not shown, open an issue titled "Security report" that says only that you
+have a report, with no details, and a private channel will be arranged. Include in the private report:
 
 - A description of the vulnerability and its potential impact
 - Steps to reproduce (a minimal example is ideal), using invented data only: never send real customer or restaurant

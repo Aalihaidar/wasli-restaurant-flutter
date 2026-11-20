@@ -21,7 +21,9 @@ GitHub can restrict an environment to one branch (**Deployment branches and tags
 a private repository needs a paid plan for it. Where it is not available, the **Build**
 workflow refuses a manual run from the wrong branch (staging only from `develop`,
 production only from `main`). That stops a mistake; it is not a security boundary, so
-restrict the environments in GitHub as soon as the plan allows it.
+restrict the environments in GitHub as soon as the plan allows it. They are restricted while the repository is public
+(since 2026-11-20); if it becomes private on the Free plan again, the restriction may stop being enforced, so read it
+back with `gh api repos/<owner>/<repo>/environments/<name>` and rely on that refusal.
 
 The flavors are not in the template (`flutter create` makes the `android/` folder), so
 you set them up once, right after `flutter create`: the Gradle file is in
