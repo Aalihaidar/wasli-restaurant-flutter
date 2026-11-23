@@ -200,9 +200,12 @@ vulnerability reporting). When the repository becomes private again, read these 
 - [x] `lib/api/**` is excluded from analysis (since Phase 2); `flutter analyze --fatal-infos` reports nothing
 - [x] Commit `api/` and `lib/api` together (#6); the **API client is current** job is green
 - [ ] Fixture for `GET /config` with invented values taken from the contract example
-- [ ] Optional: move the pin from `a4f8591` to the current backend `develop` head in its own pull request
-      (`scripts/sync-api.sh --commit <sha>`). The customer app pins `ac60db8`; the contract change in between
-      (`nearest` optional on `restaurants/nearby`) is outside this client's paths, and the backend has no staff path yet
+- [x] Moved the pin from `a4f8591` to `2f36d7212eab9815dd4dd67271306a544c0d9518` (backend `develop`, 2026-11-23) in its
+      own pull request with `scripts/sync-api.sh --commit <sha>`. `lib/api` is unchanged: the config schema did not change
+      and the new paths (chat, `order_type`) are outside this client's paths. The contract now has `service_radius_m` on
+      the restaurant detail and on `nearest`, `parking_lot` removed from both (breaking, customer side only), nested menu
+      categories, `order_type` on conversations and orders, and the error code `phone_not_verified`. The backend still has
+      no staff path (D3)
 - [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
       in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
