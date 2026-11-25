@@ -217,7 +217,10 @@ Each item is its own small pull request.
       added with `flutter pub add`; nothing imports them yet
 - [x] **Decide** providers and value classes: hand-written Riverpod providers, plain Dart 3 classes, no `freezed` or
       `equatable`, no `riverpod_generator` (decided 2026-11-12)
-- [ ] `app/`: `bootstrap()`, `ProviderScope`, global error zone, router, app shell
+- [x] `app/`: `bootstrap()` reads `AppEnvironment` once (a wrong build-time value shows a plain error screen and the app
+      does not start), runs the app in a `ProviderScope` that overrides `appEnvironmentProvider`, and reports uncaught
+      errors by their type only; `go_router` with one placeholder route (`appRouterProvider`)
+- [ ] App shell: the page frame with the responsive size classes and the navigation, after `theme/` and the layout helpers
 - [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
 - [x] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings); retry with backoff for reads only
