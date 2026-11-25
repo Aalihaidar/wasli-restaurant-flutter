@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:wasli_restaurant/app/app.dart';
 import 'package:wasli_restaurant/app/home_placeholder_page.dart';
+import 'package:wasli_restaurant/core/l10n/app_locales.dart';
 import 'package:wasli_restaurant/theme/wasli_colors.dart';
 import 'package:wasli_restaurant/theme/wasli_theme.dart';
 
@@ -16,11 +17,11 @@ void main() {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
     await tester.pumpWidget(const ProviderScope(child: App()));
     expect(_themeOfPage(tester).data.extension<WasliColors>(), same(WasliColors.light));
-    expect(_themeOfPage(tester).data.colorScheme.primary, lightTheme.colorScheme.primary);
+    expect(_themeOfPage(tester).data.colorScheme.primary, lightTheme(AppLocales.english).colorScheme.primary);
 
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     await tester.pumpAndSettle();
     expect(_themeOfPage(tester).data.extension<WasliColors>(), same(WasliColors.dark));
-    expect(_themeOfPage(tester).data.colorScheme.primary, darkTheme.colorScheme.primary);
+    expect(_themeOfPage(tester).data.colorScheme.primary, darkTheme(AppLocales.english).colorScheme.primary);
   });
 }

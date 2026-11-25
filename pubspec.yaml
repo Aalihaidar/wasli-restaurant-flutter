@@ -68,6 +68,16 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Rubik, one family for Latin and Arabic (SIL Open Font License; the licence text is shown on the licence page). It is
+  # a variable font: the weight comes from the `wght` axis (theme/typography.dart). Bundled, never downloaded at start.
+  fonts:
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik-VariableFont_wght.ttf
+
+  assets:
+    - assets/fonts/Rubik-OFL.txt
+
   # Runs `flutter gen-l10n` (l10n.yaml) on pub get, run, test and build, so the labels in l10n/*.arb become code.
   generate: true
 
