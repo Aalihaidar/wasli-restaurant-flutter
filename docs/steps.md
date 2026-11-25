@@ -241,7 +241,9 @@ Each item is its own small pull request.
 - [x] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`, thousands grouped, sign kept, any other currency
       as its code), UTC → Asia/Dubai as a fixed +4 h (no daylight saving, no time-zone package) with `HH:mm` and
       `YYYY-MM-DD`, Western digits in both languages. Distance, plate and "time since placed" come with the orders feature
-- [ ] `core/logging`: logger interface without personal data
+- [x] `core/logging`: `AppLogger` interface without personal data (a failure writes the error's type, never its message;
+      debug is dropped in a release build), `SinkLogger` with the developer-console sink, and the `CrashReporter` hook
+      (no-op until a service is chosen). `bootstrap` reports uncaught errors through them
 - [ ] `theme/`: Ink & Mustard tokens, `ColorScheme`, `ThemeExtension`, Rubik typography, component themes, light/dark
 - [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200
 - [ ] Localisation: ARB files `en` and `ar`, locale controller, RTL; every label from ARB
