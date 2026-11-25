@@ -246,7 +246,13 @@ Each item is its own small pull request.
       (no-op until a service is chosen). `bootstrap` reports uncaught errors through them
 - [ ] `theme/`: Ink & Mustard tokens, `ColorScheme`, `ThemeExtension`, Rubik typography, component themes, light/dark
 - [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200
-- [ ] Localisation: ARB files `en` and `ar`, locale controller, RTL; every label from ARB
+- [x] Localisation: `l10n/app_en.arb` and `app_ar.arb` with `flutter gen-l10n` (`l10n.yaml`, `generate: true`; the
+      generated code is not committed), `AppLocales`, `LocaleController` (English at start, whatever the device uses, like
+      the customer app), `context.l10n`, and the `material_ui` Material delegates so Arabic flips the layout to right to
+      left and gives the framework widgets their Arabic labels. Only the app title exists so far; each screen adds its own
+      messages. The Arabic title "وصلي للمطاعم" is a first wording for the owner to confirm
+- [ ] Remember the chosen language between runs (`shared_preferences`, non-sensitive settings only): a `LocaleStore`
+      interface with a platform implementation, and a language switch on a settings screen
 - [ ] `GET /config` on start (without a token), with the "waking up the server" message after 3 s
 - [ ] Staff login screen skeleton (username and password, no password auto-fill), not reachable from a route yet
 - [ ] Unit and widget tests for each of the above (money formatting in both languages, error mapping, RTL smoke test)
