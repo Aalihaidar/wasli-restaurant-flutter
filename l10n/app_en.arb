@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appTitle": "Wasli Restaurant",
+  "@appTitle": {
+    "description": "The name of the app, shown in the browser tab, the task switcher and the first screen."
+  }
+}

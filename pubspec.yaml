@@ -68,6 +68,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Runs `flutter gen-l10n` (l10n.yaml) on pub get, run, test and build, so the labels in l10n/*.arb become code.
+  generate: true
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

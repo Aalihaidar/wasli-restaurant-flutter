@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:wasli_restaurant/core/l10n/l10n.dart';
 
 /// The first screen until the staff login and the orders list exist.
 class HomePlaceholderPage extends StatelessWidget {
@@ -7,6 +8,6 @@ class HomePlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Wasli Restaurant')));
+    return Scaffold(body: Center(child: Text(context.l10n.appTitle)));
   }
 }
