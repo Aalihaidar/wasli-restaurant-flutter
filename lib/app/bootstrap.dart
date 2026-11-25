@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
@@ -9,44 +8,52 @@ import 'package:wasli_restaurant/app/config_error_app.dart';
 import 'package:wasli_restaurant/core/config/app_config_exception.dart';
 import 'package:wasli_restaurant/core/config/app_environment.dart';
 import 'package:wasli_restaurant/core/config/app_environment_provider.dart';
+import 'package:wasli_restaurant/core/logging/logging_providers.dart';
 
 /// Prepares the app and runs the root widget.
 ///
 /// Path URLs on the web (no `#`); the call does nothing on the other platforms. The build-time values are read once: a
 /// wrong value shows [ConfigErrorApp] and the app does not start. Otherwise the app runs inside a [ProviderScope] with
-/// the environment, and errors that nothing caught are reported without their message, which could hold personal data.
+/// the environment. Errors that nothing caught go to the logger and the crash reporter by type only, because the message
+/// of an error could hold personal data.
 void bootstrap() {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  _reportUncaughtErrors();
 
-  final AppEnvironment environment;
+  AppEnvironment? environment;
+  AppConfigException? configError;
   try {
     environment = AppEnvironment.fromBuild();
   } on AppConfigException catch (error) {
-    runApp(ConfigErrorApp(message: error.message));
+    configError = error;
+  }
+
+  final container = ProviderContainer(
+    overrides: [if (environment != null) appEnvironmentProvider.overrideWithValue(environment)],
+  );
+  _reportUncaughtErrors(container);
+
+  if (configError != null) {
+    container.read(loggerProvider).error('The build configuration is invalid.', error: configError);
+    runApp(ConfigErrorApp(message: configError.message));
     return;
   }
-  runApp(ProviderScope(overrides: [appEnvironmentProvider.overrideWithValue(environment)], child: const App()));
+  runApp(UncontrolledProviderScope(container: container, child: const App()));
 }
 
-/// Sends the errors of the framework and of the platform to one place that logs the kind of error and nothing else.
-void _reportUncaughtErrors() {
+/// Sends the errors of the framework and of the platform to the logger and the crash reporter, by type only.
+void _reportUncaughtErrors(ProviderContainer container) {
+  void report(Object error, StackTrace? stack) {
+    container.read(loggerProvider).error('Uncaught error.', error: error, stackTrace: stack);
+    container.read(crashReporterProvider).report(error.runtimeType.toString(), stackTrace: stack);
+  }
+
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    _report(details.exception, details.stack);
+    report(details.exception, details.stack);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    _report(error, stack);
+    report(error, stack);
     return true;
   };
-}
-
-void _report(Object error, StackTrace? stack) {
-  developer.log(
-    'Uncaught ${error.runtimeType}',
-    name: 'wasli.app',
-    error: error.runtimeType.toString(),
-    stackTrace: stack,
-  );
 }
