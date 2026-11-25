@@ -244,7 +244,14 @@ Each item is its own small pull request.
 - [x] `core/logging`: `AppLogger` interface without personal data (a failure writes the error's type, never its message;
       debug is dropped in a release build), `SinkLogger` with the developer-console sink, and the `CrashReporter` hook
       (no-op until a service is chosen). `bootstrap` reports uncaught errors through them
-- [ ] `theme/`: Ink & Mustard tokens, `ColorScheme`, `ThemeExtension`, Rubik typography, component themes, light/dark
+- [x] `theme/` colours and tokens: the Ink & Mustard `ColorScheme` in light and dark, the `WasliColors` extension for the
+      colours without a Material slot (accent, muted, borders, link, focus ring, the four status pills; read as
+      `context.wasli`), the spacing, radius and motion tokens, and `lightTheme`/`darkTheme` (the app follows the system
+      setting). A test checks the contrast of every text pair (4.5:1) and of the input outline and focus ring (3:1)
+- [ ] `theme/` typography: Rubik (400 to 700) bundled in `assets/fonts/` with its licence text, the ten text styles of the
+      design, Arabic line height and letter spacing (needs the font files and the licence page; open question 9)
+- [ ] `theme/` component themes: buttons (48 high, 56 on the orders screen), inputs, cards, app bar, tabs, dialogs, the
+      2 px focus ring
 - [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200
 - [x] Localisation: `l10n/app_en.arb` and `app_ar.arb` with `flutter gen-l10n` (`l10n.yaml`, `generate: true`; the
       generated code is not committed), `AppLocales`, `LocaleController` (English at start, whatever the device uses, like
