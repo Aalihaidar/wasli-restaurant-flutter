@@ -123,7 +123,8 @@ Look at the **Actions** tab (or `gh run list`) and tick only what was seen.
       the `detect` step and its `pull-requests: read` permission (2026-11-19, pull request #12)
 - [x] (b) A pull request that changes only documentation shows **no Build run** (2026-11-19, pull request #13: **CI** and
       **PR labels** ran, **Build** did not)
-- [ ] (c) A pull request that changes only Dart code runs the web build and **skips** the two Android jobs
+- [x] (c) A pull request that changes only Dart code runs the web build and **skips** the two Android jobs (2026-11-25,
+      pull request #19: **Web** ran, both Android jobs were skipped; #18, which changed `pubspec.yaml`, ran them)
 - [x] (d) A merge into `develop` starts **no Build run** (2026-11-19, merge of #12: no Build run after it)
 - [ ] (e) **Actions, Build, Run workflow** from `develop` with `staging` works and refreshes the draft "Staging"
 - [ ] (f) A manual run of `production` from `develop`, or of `staging` from a topic branch, fails at once with the
@@ -234,7 +235,9 @@ Each item is its own small pull request.
       generic failure of the status)
 - [ ] `core/storage`: `TokenStore` interface; web interim implementation (memory first); `flutter_secure_storage`
       implementation for Android (Android backups exclude it; cleared on logout and on a `401`)
-- [ ] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`), UTC → Asia/Dubai, Western digits
+- [x] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`, thousands grouped, sign kept, any other currency
+      as its code), UTC → Asia/Dubai as a fixed +4 h (no daylight saving, no time-zone package) with `HH:mm` and
+      `YYYY-MM-DD`, Western digits in both languages. Distance, plate and "time since placed" come with the orders feature
 - [ ] `core/logging`: logger interface without personal data
 - [ ] `theme/`: Ink & Mustard tokens, `ColorScheme`, `ThemeExtension`, Rubik typography, component themes, light/dark
 - [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200
