@@ -233,8 +233,11 @@ Each item is its own small pull request.
       test sends the generated `GET /config` through the parsed value and checks the URL `.../api/v1/config`
 - [x] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
       generic failure of the status)
-- [ ] `core/storage`: `TokenStore` interface; web interim implementation (memory first); `flutter_secure_storage`
-      implementation for Android (Android backups exclude it; cleared on logout and on a `401`)
+- [x] `core/storage`: `TokenStore` interface (`read`, `write`, `clear`) and the in-memory implementation, the interim
+      store on the web (the token is gone when the page reloads); `tokenStoreProvider` gives the in-memory store until a
+      platform store overrides it. The token never reaches `shared_preferences`, a log or a `toString`
+- [ ] `flutter_secure_storage` implementation of `TokenStore` for Android, iOS and Windows (Android backups exclude it;
+      cleared on logout and on a `401`), chosen where the app is assembled
 - [x] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`, thousands grouped, sign kept, any other currency
       as its code), UTC → Asia/Dubai as a fixed +4 h (no daylight saving, no time-zone package) with `HH:mm` and
       `YYYY-MM-DD`, Western digits in both languages. Distance, plate and "time since placed" come with the orders feature
