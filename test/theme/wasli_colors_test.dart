@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:wasli_restaurant/core/l10n/app_locales.dart';
 import 'package:wasli_restaurant/theme/color_schemes.dart';
 import 'package:wasli_restaurant/theme/wasli_colors.dart';
 import 'package:wasli_restaurant/theme/wasli_theme.dart';
@@ -91,18 +92,18 @@ void main() {
 
   group('the themes', () {
     test('use Material 3, the page background and the matching extension', () {
-      expect(lightTheme.useMaterial3, isTrue);
-      expect(lightTheme.scaffoldBackgroundColor, WasliColors.light.background);
-      expect(lightTheme.extension<WasliColors>(), same(WasliColors.light));
-      expect(darkTheme.scaffoldBackgroundColor, WasliColors.dark.background);
-      expect(darkTheme.extension<WasliColors>(), same(WasliColors.dark));
+      expect(lightTheme(AppLocales.english).useMaterial3, isTrue);
+      expect(lightTheme(AppLocales.english).scaffoldBackgroundColor, WasliColors.light.background);
+      expect(lightTheme(AppLocales.english).extension<WasliColors>(), same(WasliColors.light));
+      expect(darkTheme(AppLocales.english).scaffoldBackgroundColor, WasliColors.dark.background);
+      expect(darkTheme(AppLocales.english).extension<WasliColors>(), same(WasliColors.dark));
     });
 
     testWidgets('context.wasli reads the colours of the active theme', (tester) async {
       late WasliColors read;
       await tester.pumpWidget(
         MaterialApp(
-          theme: darkTheme,
+          theme: darkTheme(AppLocales.english),
           home: Builder(
             builder: (context) {
               read = context.wasli;

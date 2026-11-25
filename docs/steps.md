@@ -248,8 +248,13 @@ Each item is its own small pull request.
       colours without a Material slot (accent, muted, borders, link, focus ring, the four status pills; read as
       `context.wasli`), the spacing, radius and motion tokens, and `lightTheme`/`darkTheme` (the app follows the system
       setting). A test checks the contrast of every text pair (4.5:1) and of the input outline and focus ring (3:1)
-- [ ] `theme/` typography: Rubik (400 to 700) bundled in `assets/fonts/` with its licence text, the ten text styles of the
-      design, Arabic line height and letter spacing (needs the font files and the licence page; open question 9)
+- [x] `theme/` typography: Rubik, the variable font (`wght` 300 to 900, SIL Open Font License 1.1, from the Google Fonts
+      repository, upstream `googlefonts/rubik` at `9167c98`), bundled in `assets/fonts/` with its licence text; the ten
+      text styles of the design (`WasliTextStyles`, read as `context.wasliText`) mapped onto all 15 Material text slots;
+      Arabic with no letter spacing and a line height 0.1 taller (one constant, to remove if no clipping shows on a real
+      screen); the licence is registered for the licence page. The themes now depend on the language
+- [ ] A licence page reachable from a settings screen (`showLicensePage`), so the Rubik licence is shown to the user
+- [ ] Check a long mixed Arabic and Latin line, and text scaled to 200 %, on the first real screens
 - [ ] `theme/` component themes: buttons (48 high, 56 on the orders screen), inputs, cards, app bar, tabs, dialogs, the
       2 px focus ring
 - [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200

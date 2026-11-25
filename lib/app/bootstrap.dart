@@ -9,6 +9,7 @@ import 'package:wasli_restaurant/core/config/app_config_exception.dart';
 import 'package:wasli_restaurant/core/config/app_environment.dart';
 import 'package:wasli_restaurant/core/config/app_environment_provider.dart';
 import 'package:wasli_restaurant/core/logging/logging_providers.dart';
+import 'package:wasli_restaurant/theme/font_licences.dart';
 
 /// Prepares the app and runs the root widget.
 ///
@@ -19,6 +20,7 @@ import 'package:wasli_restaurant/core/logging/logging_providers.dart';
 void bootstrap() {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  registerFontLicences();
 
   AppEnvironment? environment;
   AppConfigException? configError;
