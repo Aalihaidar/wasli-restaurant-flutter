@@ -66,8 +66,8 @@ Guides used by these steps: [`README.md`](../README.md) (sections 2, 3, 7 and 9)
       passing test in `test/`
 - [ ] `env/staging.json` (written) and `env/production.json` (waits for the production URLs) (public values only: `API_BASE_URL`, `CUSTOMER_SITE_URL`,
       `RESTAURANT_SITE_URL`); the names listed in `.env.example`
-- [x] `.vscode/launch.json`: `--dart-define=API_BASE_URL=http://localhost:8000/api/v1` for web and
-      `http://10.0.2.2:8000/api/v1` for the emulator
+- [x] `.vscode/launch.json`: `--dart-define=API_BASE_URL=http://localhost:8000` for web and
+      `http://10.0.2.2:8000` for the emulator (the server address only, no path)
 - [x] Quality gates pass: `dart format --set-exit-if-changed .`, `flutter analyze --fatal-infos`, `flutter test`
 - [x] Run it: `flutter run -d web-server --web-port 8080` opens in the host browser
 
@@ -213,7 +213,8 @@ vulnerability reporting). When the repository becomes private again, read these 
 
 Each item is its own small pull request.
 
-- [ ] Packages: `flutter_riverpod`, `go_router`, `intl`, `flutter_localizations`
+- [x] Packages: `flutter_riverpod` 3.5.0, `go_router` 18.1.4, `intl` 0.20.3, `flutter_localizations` (Flutter SDK),
+      added with `flutter pub add`; nothing imports them yet
 - [x] **Decide** providers and value classes: hand-written Riverpod providers, plain Dart 3 classes, no `freezed` or
       `equatable`, no `riverpod_generator` (decided 2026-11-12)
 - [ ] `app/`: `bootstrap()`, `ProviderScope`, global error zone, router, app shell
@@ -222,9 +223,10 @@ Each item is its own small pull request.
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings); retry with backoff for reads only
       (never a `429`, never a call that changes something); `guardRequest` turns a failed call into a `Failure`. The
       Dio client takes the server address without a path (the generated paths start with `/api/v1`)
-- [ ] Decide the shape of `API_BASE_URL`: `env/staging.json`, `.env.example`, `.vscode/launch.json` and `AppEnvironment`
-      say the address includes `/api/v1`, but the generated paths already start with `/api/v1`, so the call would go to
-      `/api/v1/api/v1/config`. Change them to the address without a path (owner decision)
+- [x] **Decided (owner, 2026-11-25):** `API_BASE_URL` is the server address only, with no path (for example
+      `https://wasli-staging.onrender.com`), because the generated paths already start with `/api/v1`. `AppEnvironment`
+      refuses a value with a path at start, `env/staging.json`, `.env.example` and `.vscode/launch.json` follow, and a
+      test sends the generated `GET /config` through the parsed value and checks the URL `.../api/v1/config`
 - [x] `core/error`: sealed `Failure`, error-body parser, code → failure mapper (unknown code and non-JSON body =
       generic failure of the status)
 - [ ] `core/storage`: `TokenStore` interface; web interim implementation (memory first); `flutter_secure_storage`
@@ -265,13 +267,19 @@ Each item is its own small pull request.
 
 Before D3 freezes the staff order object, raise the backend requests (see "Backend requests" below).
 
-- [ ] Pin `v0.3.0` and fix what the compiler reports
-- [ ] Staff login (`POST /auth/login`), logout (`POST /auth/logout`), `GET /staff/me`; a `401` returns to login once
+- [ ] Pin the contract commit of each backend slice (login, logout, `staff/me` and password first; then the orders list;
+      then accept and reject; the tag `v0.3.0` once published) and fix what the compiler reports
+- [ ] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
+      login (role, permissions, `must_change_password`, restaurant); a `401` returns to login once; a `403` on
+      `GET /staff/me` means the account has no restaurant membership any more
+- [ ] Change password (`POST /auth/password`, `current_password` and `new_password`, `204`) when `must_change_password` is
+      `true`; the other staff endpoints keep working meanwhile, the app decides how firmly to ask
 - [ ] Hide or disable actions by role and permissions (`orders.view`, `orders.decide`, ...); the server stays the
       authority (`403 permission_denied`)
 - [ ] Lifecycle-aware poller in `core/polling`: `GET /staff/orders?since=<server_time>` every `poll_interval_seconds`
       while visible; backoff on 429/5xx honouring `Retry-After`
-- [ ] Merge orders by id and `server_time` without rebuilding the whole list
+- [ ] Merge orders by `id`, keeping the one with the latest `updated_at` (an order can arrive again with the same
+      `updated_at`: same state), without rebuilding the whole list; send the previous `server_time` as `since`
 - [ ] Orders list (new first, highlighted) and the "Decided" section
 - [ ] Distance badge from `distance_band` (`in_lot` within the restaurant's service distance, `near`, `far`, `unknown`),
       always with the distance in metres, accuracy, age of the position
@@ -280,7 +288,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 - [ ] Accept dialog: 5, 10 or 15 minutes; button disabled while sending; never auto-retried
 - [ ] Reject dialog: reason (preselect `too_far` on `far`, `location_unclear` on `unknown`), note required for `other`,
       at most 200 characters
-- [ ] After a network failure or `409 order_invalid_transition`, refetch the order and show its real state
+- [ ] After a network failure or `409 order_invalid_transition`, poll at once with the last `server_time` and show the
+      order from the answer (there is no `GET /staff/orders/{id}`)
 - [ ] Start shift: unlocks sound (`audioplayers`), wake lock (`wakelock_plus`), behind platform interfaces
 - [ ] New order plays a sound and stays highlighted; connection banner when polling fails
 - [ ] Staging extras: Share dialog with QR codes for both sites (`qr_flutter`, deferred import); polling pauses after
@@ -350,6 +359,9 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 
 - [x] Order type (`car`, `dine_in`, `delivery`) on the staff order object, before D3 freezes it: agreed with the backend
       on 2026-11-14 and part of its API request issue #52 (open; the staff part is built with D3)
-- [ ] Staff token expiry and rotation, per-device staff tokens
+- [x] Staff endpoints (login, logout, `staff/me`, password, orders list, accept, reject), backend API request issue #94:
+      agreed on 2026-11-25 (Rounds 2 to 4); built in three backend slices, each with a commit to pin; adds `decided_at`
+      on the staff order and extensible enums
+- [ ] Staff token expiry and rotation, per-device staff tokens (one token per account until then)
 - [ ] HttpOnly cookie session for the web once a custom domain exists
 - [ ] `min_app_version` in `/config` before any native app ships
