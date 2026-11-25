@@ -16,7 +16,7 @@ class AppEnvironment {
 
   /// Reads the values this build was compiled with.
   ///
-  /// Throws [AppConfigException] when `API_BASE_URL` is missing or a URL is invalid.
+  /// Throws [AppConfigException] when `API_BASE_URL` is missing or a URL is invalid, so a wrong build stops at start.
   factory fromBuild() => AppEnvironment.parse(
     appEnv: const String.fromEnvironment('APP_ENV'),
     // Without defines the analyzer reads `appFlavor` as the constant null, the parameter default, and calls the
@@ -30,10 +30,11 @@ class AppEnvironment {
 
   /// Validates raw build-time values and builds the environment.
   ///
-  /// [apiBaseUrl] is required. The two site URLs are optional (only the share dialog uses them); an empty value means
-  /// "not set". Every URL must be an absolute `http` or `https` address without a query or fragment, and the
-  /// production stage accepts `https` only. Trailing slashes are dropped, because the API paths are joined to the base
-  /// without one.
+  /// [apiBaseUrl] is required and is the address of the server only, such as `https://api.example.test`: no path. The
+  /// generated paths already start with `/api/v1`, so a base that held it would send every call to `/api/v1/api/v1/...`;
+  /// such a value is refused instead of being guessed at. A trailing slash is dropped. The two site URLs are optional
+  /// (only the share dialog uses them); an empty value means "not set". Every URL must be an absolute `http` or `https`
+  /// address without a query, a fragment or credentials, and the production stage accepts `https` only.
   ///
   /// Throws [AppConfigException] on the first value that is wrong.
   factory parse({
@@ -48,6 +49,11 @@ class AppEnvironment {
     if (api == null) {
       throw const AppConfigException('API_BASE_URL is not set.');
     }
+    if (api.path.isNotEmpty) {
+      throw const AppConfigException(
+        'API_BASE_URL must be the address of the server only, with no path. The API paths start with /api/v1.',
+      );
+    }
     return AppEnvironment._(
       stage: stage,
       apiBaseUrl: api,
@@ -59,7 +65,8 @@ class AppEnvironment {
   /// The stage this build targets.
   final AppStage stage;
 
-  /// The API base URL, for example `https://host/api/v1`, without a trailing slash.
+  /// The address of the API server, for example `https://host`: no path and no trailing slash. Every generated path
+  /// starts with `/api/v1` and is joined to it.
   final Uri apiBaseUrl;
 
   /// The customer site, used for the customer-site QR code. `null` when not set.
