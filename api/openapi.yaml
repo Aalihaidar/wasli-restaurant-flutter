@@ -738,10 +738,15 @@ paths:
   /api/v1/customers/login:
     post:
       operationId: customers_login
-      description: Signs a customer in with an email address or a phone number and
-        the password, and returns the customer token. `account_not_verified` until
-        the sign-up code is verified (the app opens the code screen). Ten tries per
-        contact in 15 minutes.
+      description: 'Signs a customer in with an email address or a phone number and
+        the password, and returns the customer token. A wrong password and a contact
+        with no account are the same `401 authentication_failed`, so the answer never
+        says whether an account exists. Only a caller who gives the right password
+        learns more: `403 account_not_verified` until the sign-up code is verified
+        (the app opens the code screen), and `403 permission_denied` for a blocked
+        or deactivated account. A missing or blank `identifier` or `password` is a
+        `400` that names the field in `attr`. Ten tries per contact in 15 minutes
+        (`429 throttled`).'
       summary: Sign in
       tags:
       - customers
@@ -791,6 +796,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Session'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                WrongPasswordOrUnknownContact:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: The contact or the password is not correct.
+                      attr: null
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                AccountNotVerified:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: account_not_verified
+                      detail: Verify the code sent to your contact before signing
+                        in.
+                      attr: null
+                BlockedOrDeactivated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
           description: ''
   /api/v1/customers/logout:
     post:
@@ -1933,6 +1995,237 @@ paths:
               schema:
                 $ref: '#/components/schemas/StaffOrderList'
           description: ''
+  /api/v1/staff/orders/{id}/accept:
+    post:
+      operationId: staff_orders_accept
+      description: 'Accepts a placed order of the member''s restaurant and promises
+        a wait of 5, 10 or 15 minutes (`400 invalid_choice` on `eta_minutes` for any
+        other value). The answer is posted into the customer''s chat as a `result`
+        message in the same step. An order that is not waiting for an answer any more
+        (another screen answered it, or it was answered before) is `409 order_invalid_transition`:
+        poll the list to see its real state. An order of another restaurant, or an
+        unknown id, is `404`. Answers with the updated order. Needs `orders.decide`.'
+      summary: Accept an order
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffAcceptRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffAcceptRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffAcceptRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrder'
+          description: ''
+  /api/v1/staff/orders/{id}/reject:
+    post:
+      operationId: staff_orders_reject
+      description: Rejects a placed order of the member's restaurant with a reason
+        and an optional note of at most 200 characters; the note is required for `other`
+        (`400 required` on `note`). The answer is posted into the customer's chat
+        as a `result` message in the same step. An order that is not waiting for an
+        answer any more is `409 order_invalid_transition`; an order of another restaurant,
+        or an unknown id, is `404`. Answers with the updated order. Needs `orders.decide`.
+      summary: Reject an order
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffRejectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffRejectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffRejectRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrder'
+          description: ''
 components:
   schemas:
     ActionEnum:
@@ -2860,11 +3153,17 @@ components:
             else null.
         rejection_reason_code:
           type: string
-          readOnly: true
           nullable: true
-          description: 'Why the restaurant rejected the order: `item_unavailable`,
-            `too_busy`, `closing_soon`, `too_far`, `location_unclear` or `other`;
-            null otherwise.'
+          x-extensible-enum:
+          - item_unavailable
+          - too_busy
+          - closing_soon
+          - too_far
+          - location_unclear
+          - other
+          description: 'Why the restaurant rejected the order, else null. A list that
+            can grow: treat a code you do not know as unknown.'
+          readOnly: true
         rejection_note:
           type: string
           readOnly: true
@@ -3203,6 +3502,14 @@ components:
       description: |-
         * `gps` - gps
         * `simulated` - simulated
+    StaffAcceptRequest:
+      type: object
+      properties:
+        eta_minutes:
+          type: integer
+          description: 'The wait the restaurant promises, in minutes: 5, 10 or 15.'
+      required:
+      - eta_minutes
     StaffLocation:
       type: object
       properties:
@@ -3485,6 +3792,28 @@ components:
       - members.manage
       - restaurant.settings
       - reports.view
+    StaffRejectRequest:
+      type: object
+      properties:
+        reason_code:
+          type: string
+          x-extensible-enum:
+          - item_unavailable
+          - too_busy
+          - closing_soon
+          - too_far
+          - location_unclear
+          - other
+          description: 'Why the restaurant rejects the order: `item_unavailable`,
+            `too_busy`, `closing_soon`, `too_far`, `location_unclear` or `other`.'
+          minLength: 1
+        note:
+          type: string
+          description: A note for the customer, at most 200 characters. Required when
+            the reason is `other`.
+          maxLength: 200
+      required:
+      - reason_code
     StaffRestaurant:
       type: object
       properties:
