@@ -2,7 +2,7 @@
 
 import 'package:dio/dio.dart' as transport;
 
-import 'exports.dart' as clients show ConfigClient;
+import 'exports.dart' as clients show AuthClient, ConfigClient, StaffClient;
 
 export 'exports.dart';
 
@@ -19,5 +19,7 @@ final class Api {
   Api(this._client);
   final transport.Dio _client;
 
+  late final clients.AuthClient auth = clients.AuthClient(_client);
   late final clients.ConfigClient config = clients.ConfigClient(_client);
+  late final clients.StaffClient staff = clients.StaffClient(_client);
 }
