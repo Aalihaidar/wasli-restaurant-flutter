@@ -262,8 +262,14 @@ Each item is its own small pull request.
       screen); the licence is registered for the licence page. The themes now depend on the language
 - [ ] A licence page reachable from a settings screen (`showLicensePage`), so the Rubik licence is shown to the user
 - [ ] Check a long mixed Arabic and Latin line, and text scaled to 200 %, on the first real screens
-- [ ] `theme/` component themes: buttons (48 high, 56 on the orders screen), inputs, cards, app bar, tabs, dialogs, the
-      2 px focus ring
+- [x] `theme/` component themes, wired into `lightTheme` and `darkTheme`: the three buttons (`FilledButton`,
+      `OutlinedButton`, `TextButton`; 48 high, 20 padding, `radius_md`, `button` text, `primary_dark` while pressed, 38 %
+      when disabled, the 2 px focus ring) with `WasliButtonStyles.destructive` and `WasliButtonStyles.large` (56 high, for
+      accept and reject), the text field (52 high, 1.5 px `border_input`, 2 px primary when focused, error outline, label
+      always shown), the card, the 56 high top bar, the tab bar (3 px accent underline) and the dialog (`radius_lg`),
+      with the `WasliSizes` tokens. A theme cannot express four parts of the design, so they stay open for the widgets
+      that need them: the label above the field and the error icon (a field widget with the login form), the card
+      padding of 16 (the card's own child), the loading button's spinner, and the 2 px gap of the focus ring
 - [x] Responsive layout helpers in `theme/`: `WindowSize` (compact below 600, medium 600 to 839, expanded from 840;
       `context.windowSize`, the page `gutter` of 16 or 24, `isTwoPane` for list beside detail), the `WasliLayout` widths
       in `design_tokens.dart` and `WasliContentFrame` (gutter on both sides, content at most 1200 wide and centred).

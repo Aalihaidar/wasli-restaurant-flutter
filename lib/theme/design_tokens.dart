@@ -74,3 +74,33 @@ abstract final class WasliLayout {
   /// 1200: the widest content column of the restaurant app; a wider window centres it.
   static const double contentMaxWidth = 1200;
 }
+
+/// The sizes of the controls of the design.
+abstract final class WasliSizes {
+  /// 48: the height of a button and the smallest tap target.
+  static const double buttonHeight = 48;
+
+  /// 56: the height of the action buttons on the orders screen (accept and reject) and of the top bar.
+  static const double buttonHeightLarge = 56;
+
+  /// 20: the horizontal padding inside a button.
+  static const double buttonPaddingX = 20;
+
+  /// 52: the height of a text field.
+  static const double inputHeight = 52;
+
+  /// 1.5: the border of a secondary button and of a text field.
+  static const double borderWidth = 1.5;
+
+  /// 1: the line of a card.
+  static const double hairline = 1;
+
+  /// 2: the focus outline, and the border of a focused text field.
+  static const double focusWidth = 2;
+
+  /// 3: the underline of the active tab.
+  static const double tabIndicatorHeight = 3;
+
+  /// 0.38: how opaque a disabled control is.
+  static const double disabledOpacity = 0.38;
+}
