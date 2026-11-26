@@ -25,8 +25,8 @@ swagger_parser:
 
     # Only this app's endpoints are generated: the public config and the staff endpoints (login, logout, orders).
     # The customer endpoints (/customers/*, restaurants, conversations) belong to the customer app and are never called
-    # from here. A path that does not exist in the pinned contract yet (the staff paths before backend v0.3.0) matches
-    # nothing, so a new backend endpoint stays out of this client until it is listed here.
+    # from here. A path that does not exist in the pinned contract yet (accept and reject, until a pin contains them)
+    # matches nothing, and a new backend path outside these patterns stays out of this client until it is listed here.
     operation_filters:
       include_paths:
         - /api/v1/config

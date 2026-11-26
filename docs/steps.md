@@ -191,7 +191,7 @@ vulnerability reporting). When the repository becomes private again, read these 
 - [x] `flutter pub add --dev build_runner json_serializable retrofit_generator swagger_parser`
 - [x] `swagger_parser.yaml` rewritten for `swagger_parser` 2.x (the template's keys belong to the 1.x series). It generates
       only this app's endpoints: `operation_filters.include_paths` lists `/api/v1/config`, `/api/v1/auth/**` and
-      `/api/v1/staff/**` (the staff paths match nothing until backend `v0.3.0`), and `prune_unused_models` drops the
+      `/api/v1/staff/**` (the staff paths match nothing until a pin contains them, which is `a139e8a` below), and `prune_unused_models` drops the
       models only the other endpoints use. Enums keep an `Unknown` case (`unknown_enum_values: preserve`)
 - [x] `scripts/sync-api.sh --commit a4f8591dab8d07aa97f6aec5b31b1293088b4255` (the head of the backend `develop` on
       2026-11-14, the same commit the customer app pins; its `openapi/schema.yaml` was last changed at `7793413`):
@@ -207,6 +207,13 @@ vulnerability reporting). When the repository becomes private again, read these 
       the restaurant detail and on `nearest`, `parking_lot` removed from both (breaking, customer side only), nested menu
       categories, `order_type` on conversations and orders, and the error code `phone_not_verified`. The backend still has
       no staff path (D3)
+- [x] Moved the pin from `2f36d72` to `a139e8ab3342fab007ab9827ddc287997af9446e` (backend `develop`, PR #96, Round 8 of
+      the staff orders topic) in its own pull request with `scripts/sync-api.sh --commit <sha>`. It is the first pin with
+      staff paths: `lib/api` now has the `auth` client (`POST /auth/login`, `POST /auth/logout`, `POST /auth/password`)
+      and the `staff` client (`GET /staff/me`, `GET /staff/orders?since=`) with their models (`StaffOrder`,
+      `StaffOrderItem`, `StaffOrderOption`, `StaffVehicle`, `StaffLocation`, `StaffOrderList`, `StaffMe`, the status,
+      order type, distance band, role and permission enums). Accept and reject are not in this pin yet. No app code uses
+      the new clients yet
 - [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
       in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
@@ -298,6 +305,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 
 - [ ] Pin the contract commit of each backend slice (login, logout, `staff/me` and password first; then the orders list;
       then accept and reject; the tag `v0.3.0` once published) and fix what the compiler reports
+      (pinned so far: login, logout, password, `staff/me` and the orders list at `a139e8a`; accept and reject wait for
+      the backend's next commit)
 - [ ] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
       login (role, permissions, `must_change_password`, restaurant); a `401` returns to login once; a `403` on
       `GET /staff/me` means the account has no restaurant membership any more

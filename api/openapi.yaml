@@ -5,6 +5,240 @@ info:
   description: 'The HTTP API of Wasli: order from the car through a chat with the
     restaurant.'
 paths:
+  /api/v1/auth/login:
+    post:
+      operationId: staff_login
+      description: 'Signs in a member of a restaurant with the account''s username
+        (an email address or a phone number also works) and the password, and returns
+        the staff token. A wrong username or password, an inactive account and an
+        account that is not an active member of a restaurant (a customer, the platform
+        team) are all the same `401 authentication_failed`, and no token is created
+        for them. The token belongs to the account, not to the device: signing in
+        again returns the same token and signing out ends it everywhere. Ten tries
+        a minute per address and ten wrong tries per username in 15 minutes.'
+      summary: Sign a staff member in
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffToken'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+  /api/v1/auth/logout:
+    post:
+      operationId: staff_logout
+      description: Deletes the staff token. Because the token belongs to the account,
+        every device of that account is signed out.
+      summary: Sign a staff member out
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
+  /api/v1/auth/password:
+    post:
+      operationId: staff_password_change
+      description: 'Replaces the password of the signed-in member and clears `must_change_password`.
+        The token stays valid. The new password follows the same strength rules as
+        the admin and must differ from the current one: a wrong current password is
+        a `400` on `current_password` (`password_incorrect`), a weak or unchanged
+        new one is a `400` on `new_password` (`password_too_short`, `password_too_common`,
+        `password_entirely_numeric`, `password_too_similar`, `password_unchanged`).
+        Ten tries an hour. Every other staff call keeps working while `must_change_password`
+        is true.'
+      summary: Change the password
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffPasswordRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
   /api/v1/config:
     get:
       operationId: config_retrieve
@@ -49,6 +283,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Config'
           description: ''
+  /api/v1/conversations/{id}/location:
+    put:
+      operationId: conversations_location_update
+      description: The phone's position, sent by the app when the car question appears.
+        It is kept on the conversation until the order is placed, the latest value
+        wins, and it goes to the restaurant's staff with the order. `204` with no
+        body. Allowed in any open step; a placed conversation is `409 invalid_action_for_state`
+        and an expired one `409 conversation_expired`. A latitude outside -90 to 90,
+        a longitude outside -180 to 180 or a negative `accuracy_m` is `400 invalid_location`.
+        Another customer's conversation is a `404`.
+      summary: Send the phone's position
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - chat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LocationRequest'
+        required: true
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '204':
+          description: No response body
   /api/v1/conversations/{id}/messages:
     get:
       operationId: conversations_messages_list
@@ -187,6 +533,123 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/SendMessageRequest'
+        required: true
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+          description: ''
+  /api/v1/conversations/{id}/voice:
+    post:
+      operationId: conversations_voice_create
+      description: 'One WAV clip of at most 60 seconds and 5 MB, with a `client_message_id`.
+        The clip is read in memory, understood like a typed message and dropped: it
+        is never stored, and only what was said stays on the customer''s message (`used_voice:
+        true` and the `transcript`). The answer is the same as for a message, always
+        `201`, and a replay of the same `client_message_id` returns the first result.
+        A clip nobody could understand, and an assistant that is down, are not errors:
+        the customer''s message is stored with an empty transcript and the bot answers
+        in the chat (the second also makes `ai_available` false for a few minutes).
+        `400` codes: `audio_too_long`, `audio_too_large` (the clip above 5 MB, or
+        the whole request above 6 MB) and `unsupported_audio_format` (only WAV for
+        now). Taken in every open step (the order, the car, the note and the review);
+        a placed conversation is `409 invalid_action_for_state` and an expired one
+        `409 conversation_expired`. A spoken yes at the review places the order, so
+        `403 phone_not_verified` is possible there.'
+      summary: Send a voice message
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - chat
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoiceMessageRequest'
         required: true
       security:
       - customerAuth: []
@@ -944,6 +1407,108 @@ paths:
               schema:
                 $ref: '#/components/schemas/Session'
           description: ''
+  /api/v1/orders/{id}:
+    get:
+      operationId: orders_retrieve
+      description: 'The order the customer placed: its number, `status`, `order_type`,
+        when it was placed, the wait the restaurant gave (`eta_minutes`) or the reason
+        and note of a rejection, and the totals in fils. The app polls it, or reads
+        the `result` message in the chat. Another customer''s order, or an unknown
+        id, is a `404`.'
+      summary: Read your own order
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orders
+      security:
+      - customerAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
   /api/v1/restaurants/{slug}:
     get:
       operationId: restaurants_retrieve
@@ -1193,6 +1758,181 @@ paths:
               schema:
                 $ref: '#/components/schemas/NearbyResponse'
           description: ''
+  /api/v1/staff/me:
+    get:
+      operationId: staff_me
+      description: The member, their role and permission codes, whether they must
+        change the password, and the restaurant they work for (name, logo, position
+        and the optional `service_radius_m`, absent when the restaurant sets none).
+        `403 permission_denied` means the account is not an active member of a restaurant
+        any more.
+      summary: Read the signed-in member
+      tags:
+      - staff
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffMe'
+          description: ''
+  /api/v1/staff/orders:
+    get:
+      operationId: staff_orders_list
+      description: 'The signed-in member''s restaurant''s orders created or changed
+        after `since` (by default in the last 24 hours), newest first, each with its
+        lines in both languages, the car, the optional position (`customer_location`,
+        absent when the customer did not share it), `distance_m` and `distance_band`.
+        Send the `server_time` of the answer back as `since` on the next call; the
+        server reads from a few seconds before it, so a change is never missed and
+        an order can arrive again unchanged: merge by `id` and keep the one with the
+        latest `updated_at`. Every successful call marks the restaurant''s screen
+        online for customers (they see it as open while it polled in the last 60 seconds).
+        This list is polled and is not paginated. Needs `orders.view`.'
+      summary: List the restaurant's orders that are new or changed
+      parameters:
+      - in: query
+        name: since
+        schema:
+          type: string
+          format: date-time
+        description: The `server_time` of the previous answer. Without it, the orders
+          created or changed in the last 24 hours.
+      tags:
+      - staff
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrderList'
+          description: ''
 components:
   schemas:
     ActionEnum:
@@ -1336,6 +2076,8 @@ components:
           type: string
           format: date-time
           readOnly: true
+        order:
+          $ref: '#/components/schemas/ConversationOrder'
       required:
       - ai_available
       - expires_at
@@ -1344,6 +2086,28 @@ components:
       - order_type
       - restaurant_slug
       - state
+    ConversationOrder:
+      type: object
+      description: |-
+        Leaves the property out of the response, never ``null``, when it has no value: the
+        contract has no nullable references and a missing value is an optional property
+        (docs/api-conventions.md). A missing related object counts as no value.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+      required:
+      - id
+      - number
+      - status
     ConversationStateEnum:
       type: string
       description: |-
@@ -1395,6 +2159,18 @@ components:
       - locale
       - phone
       - phone_verified
+    DistanceBandEnum:
+      type: string
+      description: |-
+        * `in_lot` - in_lot
+        * `near` - near
+        * `far` - far
+        * `unknown` - unknown
+      x-extensible-enum:
+      - in_lot
+      - near
+      - far
+      - unknown
     Error400:
       type: object
       properties:
@@ -1647,6 +2423,34 @@ components:
         * `off` - off
         * `warn` - warn
         * `enforce` - enforce
+    LocationRequest:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+          description: Latitude of the phone, in degrees.
+        lng:
+          type: number
+          format: double
+          description: Longitude of the phone, in degrees.
+        accuracy_m:
+          type: number
+          format: double
+          description: How accurate the position is, in metres (zero or more), when
+            the phone says.
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          description: |-
+            `gps`, or `simulated` for the test button on staging.
+
+            * `gps` - gps
+            * `simulated` - simulated
+      required:
+      - lat
+      - lng
+      - source
     LoginRequest:
       type: object
       properties:
@@ -1683,6 +2487,11 @@ components:
           readOnly: true
           description: The Arabic name, or the English name when there is no Arabic
             one.
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
         items:
           type: array
           items:
@@ -1690,6 +2499,7 @@ components:
           readOnly: true
       required:
       - id
+      - image_url
       - items
       - name_ar
       - name_en
@@ -2020,6 +2830,90 @@ components:
       - name_ar
       - name_en
       - options
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        order_type:
+          allOf:
+          - $ref: '#/components/schemas/OrderTypeEnum'
+          readOnly: true
+        placed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        eta_minutes:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: The wait the restaurant gave when it accepted (5, 10 or 15),
+            else null.
+        rejection_reason_code:
+          type: string
+          readOnly: true
+          nullable: true
+          description: 'Why the restaurant rejected the order: `item_unavailable`,
+            `too_busy`, `closing_soon`, `too_far`, `location_unclear` or `other`;
+            null otherwise.'
+        rejection_note:
+          type: string
+          readOnly: true
+          nullable: true
+          description: The restaurant's note with a rejection (always there for `other`),
+            else null.
+        subtotal_minor:
+          type: integer
+          readOnly: true
+          description: 'In fils: 1250 is 12.50 AED.'
+        total_minor:
+          type: integer
+          readOnly: true
+          description: 'In fils: 1250 is 12.50 AED.'
+        currency:
+          type: string
+          readOnly: true
+      required:
+      - currency
+      - eta_minutes
+      - id
+      - number
+      - order_type
+      - placed_at
+      - rejection_note
+      - rejection_reason_code
+      - status
+      - subtotal_minor
+      - total_minor
+    OrderStatusEnum:
+      type: string
+      description: |-
+        * `placed` - Placed
+        * `accepted` - Accepted
+        * `rejected` - Rejected
+        * `ready` - Ready
+        * `delivered` - Delivered
+        * `cancelled` - Cancelled
+        * `not_found` - Car not found
+        * `no_show` - No-show
+      x-extensible-enum:
+      - placed
+      - accepted
+      - rejected
+      - ready
+      - delivered
+      - cancelled
+      - not_found
+      - no_show
     OrderTypeEnum:
       type: string
       description: |-
@@ -2301,6 +3195,361 @@ components:
       - full_name
       - locale
       - password
+    SourceEnum:
+      enum:
+      - gps
+      - simulated
+      type: string
+      description: |-
+        * `gps` - gps
+        * `simulated` - simulated
+    StaffLocation:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        accuracy_m:
+          type: number
+          format: double
+          nullable: true
+          description: How accurate the position is, in metres, when the phone said.
+        source:
+          type: string
+          x-extensible-enum:
+          - gps
+          - simulated
+          - none
+          description: '`gps`, or `simulated` for the test button on staging. A list
+            that can grow: treat a value you do not know as unknown.'
+        captured_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - accuracy_m
+      - captured_at
+      - lat
+      - lng
+      - source
+    StaffLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: The account's username. An email address or a phone number
+            also works.
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - password
+      - username
+    StaffMe:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        full_name:
+          type: string
+        role:
+          allOf:
+          - $ref: '#/components/schemas/StaffRoleEnum'
+          description: |-
+            The member's role at this restaurant. A list that can grow.
+
+            * `admin` - Admin
+            * `cashier` - Cashier
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffPermissionEnum'
+          description: What the member may do. Hide an action the list does not allow;
+            the server stays the authority.
+        must_change_password:
+          type: boolean
+          description: 'True for a new member with a temporary password: ask for a
+            new one with `POST /auth/password`.'
+        restaurant:
+          $ref: '#/components/schemas/StaffRestaurant'
+      required:
+      - full_name
+      - id
+      - must_change_password
+      - permissions
+      - restaurant
+      - role
+      - username
+    StaffOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          description: The restaurant's own order number.
+        status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        order_type:
+          $ref: '#/components/schemas/OrderTypeEnum'
+        placed_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          description: 'Moves on every change to the order. Merge by `id` and keep
+            the latest: an order can arrive again unchanged, with the same value.'
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the order was accepted or rejected; null while it is placed.
+        eta_minutes:
+          type: integer
+          nullable: true
+          description: The wait the restaurant gave when it accepted (5, 10 or 15),
+            else null.
+        rejection_reason_code:
+          type: string
+          nullable: true
+          x-extensible-enum:
+          - item_unavailable
+          - too_busy
+          - closing_soon
+          - too_far
+          - location_unclear
+          - other
+          description: 'Why the restaurant rejected the order, else null. A list that
+            can grow: treat a code you do not know as unknown.'
+        rejection_note:
+          type: string
+          nullable: true
+          description: The restaurant's note with a rejection (always there for `other`),
+            else null.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffOrderItem'
+        customer_note:
+          type: string
+          description: The customer's note for the whole order, or empty.
+        subtotal_minor:
+          type: integer
+        total_minor:
+          type: integer
+        currency:
+          type: string
+        vehicle:
+          $ref: '#/components/schemas/StaffVehicle'
+        parking_note:
+          type: string
+          description: Where the car is, as the customer said it. Present for a car
+            order.
+        customer_location:
+          $ref: '#/components/schemas/StaffLocation'
+        distance_m:
+          type: integer
+          nullable: true
+          description: Metres from the customer to the restaurant; null without a
+            position.
+        distance_band:
+          allOf:
+          - $ref: '#/components/schemas/DistanceBandEnum'
+          description: |-
+            `in_lot` within the restaurant's service distance, `near`, `far`, or `unknown` without a position. A list that can grow.
+
+            * `in_lot` - in_lot
+            * `near` - near
+            * `far` - far
+            * `unknown` - unknown
+      required:
+      - currency
+      - customer_note
+      - decided_at
+      - distance_band
+      - distance_m
+      - eta_minutes
+      - id
+      - items
+      - number
+      - order_type
+      - placed_at
+      - rejection_note
+      - rejection_reason_code
+      - status
+      - subtotal_minor
+      - total_minor
+      - updated_at
+    StaffOrderItem:
+      type: object
+      properties:
+        line:
+          type: integer
+          description: The line's number in the order, from 1.
+        name_en:
+          type: string
+        name_ar:
+          type: string
+        quantity:
+          type: integer
+        unit_price_minor:
+          type: integer
+          description: The item's price with its options, in fils.
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffOrderOption'
+        note:
+          type: string
+          description: The customer's note on the line, or empty.
+        line_total_minor:
+          type: integer
+      required:
+      - line
+      - line_total_minor
+      - name_ar
+      - name_en
+      - note
+      - options
+      - quantity
+      - unit_price_minor
+    StaffOrderList:
+      type: object
+      properties:
+        server_time:
+          type: string
+          format: date-time
+          description: Send it back as `since` on the next call.
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffOrder'
+      required:
+      - orders
+      - server_time
+    StaffOrderOption:
+      type: object
+      properties:
+        name_en:
+          type: string
+        name_ar:
+          type: string
+        price_delta_minor:
+          type: integer
+          description: The change to the item's price, in fils.
+      required:
+      - name_ar
+      - name_en
+      - price_delta_minor
+    StaffPasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+      required:
+      - current_password
+      - new_password
+    StaffPermissionEnum:
+      type: string
+      description: |-
+        * `orders.view` - orders.view
+        * `orders.decide` - orders.decide
+        * `menu.edit` - menu.edit
+        * `members.manage` - members.manage
+        * `restaurant.settings` - restaurant.settings
+        * `reports.view` - reports.view
+      x-extensible-enum:
+      - orders.view
+      - orders.decide
+      - menu.edit
+      - members.manage
+      - restaurant.settings
+      - reports.view
+    StaffRestaurant:
+      type: object
+      properties:
+        slug:
+          type: string
+        name_en:
+          type: string
+        name_ar:
+          type: string
+          description: The Arabic name, or the English name when there is no Arabic
+            one.
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        service_radius_m:
+          type: integer
+          description: Metres from the restaurant that it serves cars. Absent when
+            the restaurant sets no limit.
+        currency:
+          type: string
+      required:
+      - currency
+      - latitude
+      - logo_url
+      - longitude
+      - name_ar
+      - name_en
+      - slug
+    StaffRoleEnum:
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `cashier` - Cashier
+      x-extensible-enum:
+      - admin
+      - cashier
+    StaffToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 'Send it as `Authorization: Token <token>` on every staff call.'
+      required:
+      - token
+    StaffVehicle:
+      type: object
+      properties:
+        plate:
+          type: string
+        model:
+          type: string
+        colour:
+          type: string
+      required:
+      - colour
+      - model
+      - plate
     VerifyRequest:
       type: object
       properties:
@@ -2319,6 +3568,23 @@ components:
       required:
       - code
       - identifier
+    VoiceMessageRequest:
+      type: object
+      properties:
+        client_message_id:
+          type: string
+          format: uuid
+          description: Made by the app for every message and kept for a retry, as
+            for a text.
+        audio:
+          type: string
+          format: binary
+          description: 'One WAV clip of at most 60 seconds and 5 MB. It is read in
+            memory and never stored: only what was said stays on the message, as its
+            transcript.'
+      required:
+      - audio
+      - client_message_id
   securitySchemes:
     customerAuth:
       type: apiKey
@@ -2326,3 +3592,8 @@ components:
       name: Authorization
       description: Customer token, sent as `Customer <token>`. It is returned once,
         when a sign-up is verified or a customer signs in.
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
