@@ -118,6 +118,124 @@ class _StaffClient extends StaffClient {
     return _value;
   }
 
+  @override
+  Future<StaffOrder> staffOrdersAccept({
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description":
+              "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    CancelToken? cancelToken,
+    Options? options,
+    required String id,
+    required StaffAcceptRequest body,
+  }) async {
+    final _extra = <String, dynamic>{};
+    _extra.addAll(extra);
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{
+      r'Accept': 'application/json',
+      r'Content-Type': 'application/json',
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body.toJson());
+    final _options = _setStreamType<StaffOrder>(
+      Options(
+            method: 'POST',
+            headers: _headers,
+            extra: _extra,
+            contentType: 'application/json',
+          )
+          .compose(
+            _dio.options,
+            '/api/v1/staff/orders/${id}/accept',
+            queryParameters: queryParameters,
+            data: _data,
+            cancelToken: cancelToken,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late StaffOrder _value;
+    try {
+      _value = StaffOrder.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<StaffOrder> staffOrdersReject({
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description":
+              "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    CancelToken? cancelToken,
+    Options? options,
+    required String id,
+    required StaffRejectRequest body,
+  }) async {
+    final _extra = <String, dynamic>{};
+    _extra.addAll(extra);
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{
+      r'Accept': 'application/json',
+      r'Content-Type': 'application/json',
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(body.toJson());
+    final _options = _setStreamType<StaffOrder>(
+      Options(
+            method: 'POST',
+            headers: _headers,
+            extra: _extra,
+            contentType: 'application/json',
+          )
+          .compose(
+            _dio.options,
+            '/api/v1/staff/orders/${id}/reject',
+            queryParameters: queryParameters,
+            data: _data,
+            cancelToken: cancelToken,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late StaffOrder _value;
+    try {
+      _value = StaffOrder.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

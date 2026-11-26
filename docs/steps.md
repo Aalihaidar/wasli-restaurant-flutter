@@ -214,6 +214,11 @@ vulnerability reporting). When the repository becomes private again, read these 
       `StaffOrderItem`, `StaffOrderOption`, `StaffVehicle`, `StaffLocation`, `StaffOrderList`, `StaffMe`, the status,
       order type, distance band, role and permission enums). Accept and reject are not in this pin yet. No app code uses
       the new clients yet
+- [x] Moved the pin from `a139e8a` to `4ed5f8ff94cc9b3099006b4c6575adca4d14d93c` (backend `develop`, PR #98, Round 10) in
+      its own pull request. It adds `POST /staff/orders/{id}/accept` (`StaffAcceptRequest`: `eta_minutes`) and
+      `POST /staff/orders/{id}/reject` (`StaffRejectRequest`: `reason_code`, optional `note`) to the `staff` client; both
+      answer the updated `StaffOrder`. With the orders list, the contract now holds the whole v1 order flow. No app code
+      uses them yet
 - [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
       in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
@@ -314,8 +319,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 
 - [ ] Pin the contract commit of each backend slice (login, logout, `staff/me` and password first; then the orders list;
       then accept and reject; the tag `v0.3.0` once published) and fix what the compiler reports
-      (pinned so far: login, logout, password, `staff/me` and the orders list at `a139e8a`; accept and reject wait for
-      the backend's next commit)
+      (pinned so far, at `4ed5f8f`: login, logout, password, `staff/me`, the orders list, accept and reject; ready and the
+      tag `v0.3.0` are still to come)
 - [ ] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
       login (role, permissions, `must_change_password`, restaurant); a `401` returns to login once; a `403` on
       `GET /staff/me` means the account has no restaurant membership any more
