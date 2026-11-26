@@ -264,7 +264,10 @@ Each item is its own small pull request.
 - [ ] Check a long mixed Arabic and Latin line, and text scaled to 200 %, on the first real screens
 - [ ] `theme/` component themes: buttons (48 high, 56 on the orders screen), inputs, cards, app bar, tabs, dialogs, the
       2 px focus ring
-- [ ] Responsive layout helpers: compact (< 600), medium (600-839), expanded (≥ 840), content max width 1200
+- [x] Responsive layout helpers in `theme/`: `WindowSize` (compact below 600, medium 600 to 839, expanded from 840;
+      `context.windowSize`, the page `gutter` of 16 or 24, `isTwoPane` for list beside detail), the `WasliLayout` widths
+      in `design_tokens.dart` and `WasliContentFrame` (gutter on both sides, content at most 1200 wide and centred).
+      Tests check the class boundaries and the frame at three widths in both text directions
 - [x] Localisation: `l10n/app_en.arb` and `app_ar.arb` with `flutter gen-l10n` (`l10n.yaml`, `generate: true`; the
       generated code is not committed), `AppLocales`, `LocaleController` (English at start, whatever the device uses, like
       the customer app), `context.l10n`, and the `material_ui` Material delegates so Arabic flips the layout to right to
