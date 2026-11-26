@@ -62,3 +62,15 @@ abstract final class WasliMotion {
   /// The standard curve, `cubic-bezier(.2, 0, 0, 1)`.
   static const Curve curve = Cubic(0.2, 0, 0, 1);
 }
+
+/// The widths of the responsive layout: the Material 3 window size classes and the widest content column.
+abstract final class WasliLayout {
+  /// 600: the first width of the medium class (a window narrower than this is compact).
+  static const double mediumFrom = 600;
+
+  /// 840: the first width of the expanded class.
+  static const double expandedFrom = 840;
+
+  /// 1200: the widest content column of the restaurant app; a wider window centres it.
+  static const double contentMaxWidth = 1200;
+}
