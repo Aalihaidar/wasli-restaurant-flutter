@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:wasli_restaurant/theme/button_styles.dart';
 import 'package:wasli_restaurant/theme/color_schemes.dart';
+import 'package:wasli_restaurant/theme/component_themes.dart';
 import 'package:wasli_restaurant/theme/typography.dart';
 import 'package:wasli_restaurant/theme/wasli_colors.dart';
 import 'package:wasli_restaurant/theme/wasli_text_styles.dart';
@@ -31,6 +33,14 @@ ThemeData _build(ColorScheme scheme, WasliColors colors, WasliTextStyles styles)
     scaffoldBackgroundColor: colors.background,
     fontFamily: wasliFontFamily,
     textTheme: buildTextTheme(styles),
+    filledButtonTheme: WasliButtonStyles.filled(scheme, colors, styles),
+    outlinedButtonTheme: WasliButtonStyles.outlined(scheme, colors, styles),
+    textButtonTheme: WasliButtonStyles.text(scheme, colors, styles),
+    inputDecorationTheme: buildInputTheme(scheme, colors, styles),
+    cardTheme: buildCardTheme(scheme, colors),
+    appBarTheme: buildAppBarTheme(scheme, styles),
+    tabBarTheme: buildTabBarTheme(scheme, colors, styles),
+    dialogTheme: buildDialogTheme(scheme, colors, styles),
     extensions: [colors, styles],
   );
 }
