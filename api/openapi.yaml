@@ -2111,6 +2111,109 @@ paths:
               schema:
                 $ref: '#/components/schemas/StaffOrder'
           description: ''
+  /api/v1/staff/orders/{id}/ready:
+    post:
+      operationId: staff_orders_ready
+      description: 'Says that an accepted order of the member''s restaurant is ready
+        and on its way to the car. There is no body. The customer''s chat gets a `result`
+        message with `status: ready` in the same step. Only an accepted order can
+        become ready: a placed, rejected or already ready order is `409 order_invalid_transition`
+        (poll the list to see its real state). An order of another restaurant, or
+        an unknown id, is `404`. Answers with the updated order. Needs `orders.decide`.'
+      summary: Mark an accepted order as ready
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - staff
+      security:
+      - tokenAuth: []
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+              examples:
+                AuthenticationFailed:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: authentication_failed
+                      detail: Incorrect authentication credentials.
+                      attr: null
+                NotAuthenticated:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_authenticated
+                      detail: Authentication credentials were not provided.
+                      attr: null
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403Response'
+              examples:
+                PermissionDenied:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: permission_denied
+                      detail: You do not have permission to perform this action.
+                      attr: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409Response'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error429Response'
+              examples:
+                Throttled:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: throttled
+                      detail: Request was throttled.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffOrder'
+          description: ''
   /api/v1/staff/orders/{id}/reject:
     post:
       operationId: staff_orders_reject
@@ -3623,6 +3726,11 @@ components:
           format: date-time
           nullable: true
           description: When the order was accepted or rejected; null while it is placed.
+        ready_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the restaurant said the order is ready, else null.
         eta_minutes:
           type: integer
           nullable: true
@@ -3693,6 +3801,7 @@ components:
       - number
       - order_type
       - placed_at
+      - ready_at
       - rejection_note
       - rejection_reason_code
       - status

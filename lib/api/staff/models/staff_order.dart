@@ -41,6 +41,9 @@ class StaffOrder {
     /// When the order was accepted or rejected; null while it is placed.
     required this.decidedAt,
 
+    /// When the restaurant said the order is ready, else null.
+    required this.readyAt,
+
     /// The wait the restaurant gave when it accepted (5, 10 or 15), else null.
     required this.etaMinutes,
 
@@ -134,6 +137,10 @@ class StaffOrder {
   )
   final DateTime? decidedAt;
 
+  /// When the restaurant said the order is ready, else null.
+  @JsonKey(name: "ready_at", required: true, fromJson: StaffOrder._read_readyAt, toJson: StaffOrder._write_readyAt)
+  final DateTime? readyAt;
+
   /// The wait the restaurant gave when it accepted (5, 10 or 15), else null.
   @JsonKey(
     name: "eta_minutes",
@@ -220,6 +227,7 @@ class StaffOrder {
     "placed_at",
     "updated_at",
     "decided_at",
+    "ready_at",
     "eta_minutes",
     "rejection_reason_code",
     "rejection_note",
@@ -261,6 +269,10 @@ class StaffOrder {
   static DateTime? _read_decidedAt(Object? value) => value == null ? null : DateTime.parse(value as String).toUtc();
 
   static Object? _write_decidedAt(DateTime? value) => value?.toUtc().toIso8601String();
+
+  static DateTime? _read_readyAt(Object? value) => value == null ? null : DateTime.parse(value as String).toUtc();
+
+  static Object? _write_readyAt(DateTime? value) => value?.toUtc().toIso8601String();
 
   static int? _read_etaMinutes(Object? value) => value as int?;
 

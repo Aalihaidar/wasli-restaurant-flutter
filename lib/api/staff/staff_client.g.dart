@@ -178,6 +178,55 @@ class _StaffClient extends StaffClient {
   }
 
   @override
+  Future<StaffOrder> staffOrdersReady({
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description":
+              "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    CancelToken? cancelToken,
+    Options? options,
+    required String id,
+  }) async {
+    final _extra = <String, dynamic>{};
+    _extra.addAll(extra);
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{r'Accept': 'application/json'};
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<StaffOrder>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/staff/orders/${id}/ready',
+            queryParameters: queryParameters,
+            data: _data,
+            cancelToken: cancelToken,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late StaffOrder _value;
+    try {
+      _value = StaffOrder.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<StaffOrder> staffOrdersReject({
     Map<String, Object?> extra = const {
       "openapi.security": [
