@@ -286,7 +286,13 @@ Each item is its own small pull request.
       messages. The Arabic title "وصلي للمطاعم" is a first wording for the owner to confirm
 - [ ] Remember the chosen language between runs (`shared_preferences`, non-sensitive settings only): a `LocaleStore`
       interface with a platform implementation, and a language switch on a settings screen
-- [ ] `GET /config` on start (without a token), with the "waking up the server" message after 3 s
+- [x] `GET /config` on start (without a token), with the "waking up the server" message after 3 s. `dioProvider` builds the
+      one Dio client from the environment's server address (language, token, request ID, redacted log and retry of reads,
+      in that order). The `app_config` feature (`features/app_config`) reads the public `GET /config` through its data
+      layer into `AppConfig` (the poll interval, never below 1 s), and `StartupGate` wraps the router: a progress
+      indicator, the notice after 3 s, and after a failure a message for its kind (no connection, server error, too
+      many requests, other), the request ID when the server sent one, and a **Try again** button. The provider does not
+      retry by itself. The English and Arabic wording of these eight labels is a first version for the owner to confirm
 - [ ] Staff login screen skeleton (username and password, no password auto-fill), not reachable from a route yet
 - [ ] Unit and widget tests for each of the above (money formatting in both languages, error mapping, RTL smoke test)
 - [x] **Decide** golden tests: yes, for the core widgets in Arabic and English, light and dark (decided 2026-11-12)
