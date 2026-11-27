@@ -1,0 +1,7 @@
+{
+  "location_check": "warn",
+  "require_screen_online": true,
+  "ai_enabled": true,
+  "languages": ["en", "ar"],
+  "poll_interval_seconds": 3
+}

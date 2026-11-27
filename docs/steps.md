@@ -200,7 +200,10 @@ vulnerability reporting). When the repository becomes private again, read these 
       `0.1.0`
 - [x] `lib/api/**` is excluded from analysis (since Phase 2); `flutter analyze --fatal-infos` reports nothing
 - [x] Commit `api/` and `lib/api` together (#6); the **API client is current** job is green
-- [ ] Fixture for `GET /config` with invented values taken from the contract example
+- [x] Fixture for `GET /config` (`test/support/fixtures/api/config_200.json`, read with `readApiFixture`): invented values
+      in the shape of the contract's `Config` (it has no example of its own). `test/api/contract_fixtures_test.dart` parses it
+      with the generated model and writes it back to the same JSON, so a contract change the fixture does not follow fails
+      there; the `app_config` repository test builds its answers from it
 - [x] Moved the pin from `a4f8591` to `2f36d7212eab9815dd4dd67271306a544c0d9518` (backend `develop`, 2026-11-23) in its
       own pull request with `scripts/sync-api.sh --commit <sha>`. `lib/api` is unchanged: the config schema did not change
       and the new paths (chat, `order_type`) are outside this client's paths. The contract now has `service_radius_m` on
