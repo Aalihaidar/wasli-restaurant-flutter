@@ -236,7 +236,12 @@ Each item is its own small pull request.
 - [x] `app/`: `bootstrap()` reads `AppEnvironment` once (a wrong build-time value shows a plain error screen and the app
       does not start), runs the app in a `ProviderScope` that overrides `appEnvironmentProvider`, and reports uncaught
       errors by their type only; `go_router` with one placeholder route (`appRouterProvider`)
-- [ ] App shell: the page frame with the responsive size classes and the navigation, after `theme/` and the layout helpers
+- [x] App shell (`app/app_shell.dart`): the top bar (the app's name, 56 high, primary colour, from the theme) and under
+      it the page in `WasliContentFrame` (gutter of the size class, at most 1200 wide, centred), as a `ShellRoute` in the
+      router, so every page sits in it. The placeholder page is now empty, because the name is in the bar. Tests check the
+      bar and the page's position at 400, 1000 and 1600 wide in English and Arabic
+- [ ] App shell navigation (decide what it holds): the orders screen is the only destination until the admin panel
+      exists, so it waits for the screens that need it; the staff login may sit outside the shell
 - [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
 - [x] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings); retry with backoff for reads only
