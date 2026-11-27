@@ -222,6 +222,11 @@ vulnerability reporting). When the repository becomes private again, read these 
       `POST /staff/orders/{id}/reject` (`StaffRejectRequest`: `reason_code`, optional `note`) to the `staff` client; both
       answer the updated `StaffOrder`. With the orders list, the contract now holds the whole v1 order flow. No app code
       uses them yet
+- [x] Moved the pin from `4ed5f8f` to `31d2d1ce9051935890eaa22a14a107ac83712aeb` (backend `develop`, PR #101, Round 12) in
+      its own pull request. It adds `POST /staff/orders/{id}/ready` (no body, needs `orders.decide`, answers the updated
+      `StaffOrder`; `409 order_invalid_transition` when the order is not accepted) to the `staff` client as
+      `staffOrdersReady`, and `ready_at` (nullable, always present) to `StaffOrder`. `status` already had `ready`. The
+      contract change is optional for the screens: the Ready button itself stays in Phase 9. No app code uses it yet
 - [ ] **Backend:** when the backend publishes `v0.1.0` with its `openapi.yaml` asset, run `scripts/sync-api.sh v0.1.0`
       in a pull request of its own and compare the diff with the commit pin (it should be empty or explained)
 
@@ -338,8 +343,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 
 - [ ] Pin the contract commit of each backend slice (login, logout, `staff/me` and password first; then the orders list;
       then accept and reject; the tag `v0.3.0` once published) and fix what the compiler reports
-      (pinned so far, at `4ed5f8f`: login, logout, password, `staff/me`, the orders list, accept and reject; ready and the
-      tag `v0.3.0` are still to come)
+      (pinned so far, at `31d2d1c`: login, logout, password, `staff/me`, the orders list, accept, reject and ready; the
+      tag `v0.3.0` is still to come)
 - [ ] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
       login (role, permissions, `must_change_password`, restaurant); a `401` returns to login once; a `403` on
       `GET /staff/me` means the account has no restaurant membership any more
@@ -376,7 +381,7 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 - [ ] Pin `v1.0.0`
 - [ ] Arabic and English with RTL on every screen, all three size classes checked
 - [ ] Accessibility pass (semantics, contrast, text scaling, 56 px action buttons)
-- [ ] Optional Ready button (`POST /staff/orders/{id}/ready`)
+- [ ] Optional Ready button (`POST /staff/orders/{id}/ready`; the endpoint is in the pin since `31d2d1c`)
 - [ ] Measure the web bundle size; **decide** the budget and check it in CI
 - [ ] Profile the orders screen in DevTools over a long session
 

@@ -193,6 +193,61 @@ abstract class StaffClient {
     @Path('id') required String id,
     @Body() required StaffAcceptRequest body,
   });
+  Future<StaffOrder> _staffOrdersReadyWithOptions({
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    CancelToken? cancelToken,
+    Options? options,
+    required String id,
+  }) async {
+    final _options = (options ?? Options()).copyWith(
+      method: "POST",
+      responseType: ResponseType.json,
+      extra: {...?options?.extra, ...extra},
+      headers: {...?options?.headers, 'Accept': "application/json"},
+    );
+    final response = await _transport.request<dynamic>(
+      "/api/v1/staff/orders/" + id.toString() + "/ready",
+      options: _options,
+      cancelToken: cancelToken,
+    );
+    return StaffOrder.fromJson(response.data as Map<String, Object?>);
+  }
+
+  /// Mark an accepted order as ready
+  ///
+  /// Says that an accepted order of the member's restaurant is ready and on its way to the car. There is no body. The customer's chat gets a `result` message with `status: ready` in the same step. Only an accepted order can become ready: a placed, rejected or already ready order is `409 order_invalid_transition` (poll the list to see its real state). An order of another restaurant, or an unknown id, is `404`. Answers with the updated order. Needs `orders.decide`.
+  @POST('/api/v1/staff/orders/{id}/ready')
+  Future<StaffOrder> staffOrdersReady({
+    @Extras()
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    @CancelRequest() CancelToken? cancelToken,
+    Options? options,
+    @Path('id') required String id,
+  });
   Future<StaffOrder> _staffOrdersRejectWithOptions({
     Map<String, Object?> extra = const {
       "openapi.security": [
@@ -332,6 +387,30 @@ class _StaffClientWithOptions extends _StaffClient {
     return options == null
         ? super.staffOrdersAccept(extra: extra, cancelToken: cancelToken, options: options, id: id, body: body)
         : _staffOrdersAcceptWithOptions(extra: extra, cancelToken: cancelToken, options: options, id: id, body: body);
+  }
+
+  @override
+  Future<StaffOrder> staffOrdersReady({
+    Map<String, Object?> extra = const {
+      "openapi.security": [
+        {"tokenAuth": []},
+      ],
+      "openapi.securitySchemes": {
+        "tokenAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Token-based authentication with required prefix \"Token\"",
+        },
+      },
+    },
+    CancelToken? cancelToken,
+    Options? options,
+    required String id,
+  }) {
+    return options == null
+        ? super.staffOrdersReady(extra: extra, cancelToken: cancelToken, options: options, id: id)
+        : _staffOrdersReadyWithOptions(extra: extra, cancelToken: cancelToken, options: options, id: id);
   }
 
   @override
