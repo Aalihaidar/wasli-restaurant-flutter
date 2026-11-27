@@ -6,19 +6,21 @@ import 'package:wasli_restaurant/app/app.dart';
 import 'package:wasli_restaurant/app/home_placeholder_page.dart';
 import 'package:wasli_restaurant/core/l10n/locale_controller.dart';
 
+import '../support/app_config_overrides.dart';
+
 TextDirection _directionOfPage(WidgetTester tester) =>
     Directionality.of(tester.element(find.byType(HomePlaceholderPage)));
 
 void main() {
   testWidgets('starts in English, left to right', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: App()));
+    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded], child: const App()));
 
     expect(find.text('Wasli Restaurant'), findsOneWidget);
     expect(_directionOfPage(tester), TextDirection.ltr);
   });
 
   testWidgets('switching to Arabic changes the text and flips the layout to right to left', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(overrides: [appConfigLoaded]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
 
@@ -31,7 +33,7 @@ void main() {
   });
 
   testWidgets('the Material widgets get their own Arabic labels too', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(overrides: [appConfigLoaded]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
 
@@ -44,7 +46,7 @@ void main() {
   });
 
   testWidgets('switching back to English restores left to right', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(overrides: [appConfigLoaded]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
 

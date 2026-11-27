@@ -3,5 +3,37 @@
   "appTitle": "Wasli Restaurant",
   "@appTitle": {
     "description": "The name of the app, shown in the browser tab, the task switcher and the first screen."
+  },
+  "startupLoading": "Loading",
+  "@startupLoading": {
+    "description": "The spoken label of the progress indicator on the start screen."
+  },
+  "startupWakingServer": "Waking up the server. This can take up to a minute.",
+  "@startupWakingServer": {
+    "description": "Shown on the start screen when the server takes more than 3 seconds to answer (a free server sleeps when it is not used)."
+  },
+  "retry": "Try again",
+  "@retry": {
+    "description": "The button on the start screen after a failure."
+  },
+  "failureNetwork": "Can''t reach the server. Check the connection and try again.",
+  "@failureNetwork": {
+    "description": "The message when a call got no answer: offline, dropped or timed out."
+  },
+  "failureServer": "The server had a problem. Try again in a moment.",
+  "@failureServer": {
+    "description": "The message for a server error (5xx)."
+  },
+  "failureThrottled": "Too many requests. Wait a moment and try again.",
+  "@failureThrottled": {
+    "description": "The message when the server asks the app to slow down (429)."
+  },
+  "failureGeneric": "Something went wrong. Try again.",
+  "@failureGeneric": {
+    "description": "The message for any other failure."
+  },
+  "requestIdLabel": "Request ID",
+  "@requestIdLabel": {
+    "description": "The label before the request ID on a failure screen, so a problem can be found in the server logs."
   }
 }

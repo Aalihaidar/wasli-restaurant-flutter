@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wasli_restaurant/app/app.dart';
 import 'package:wasli_restaurant/app/config_error_app.dart';
 
+import '../support/app_config_overrides.dart';
+
 void main() {
   testWidgets('shows the placeholder page through the router', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: App()));
+    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded], child: const App()));
 
     expect(find.text('Wasli Restaurant'), findsWidgets);
     expect(find.text('This build is not configured correctly.'), findsNothing);
