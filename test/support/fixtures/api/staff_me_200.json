@@ -1,0 +1,18 @@
+{
+  "id": "6f1d2c1e-3b4a-4c55-9d0e-1a2b3c4d5e6f",
+  "username": "sara.cashier",
+  "full_name": "Sara Tester",
+  "role": "cashier",
+  "permissions": ["orders.view", "orders.decide"],
+  "must_change_password": false,
+  "restaurant": {
+    "slug": "demo-grill",
+    "name_en": "Demo Grill",
+    "name_ar": "مشويات تجريبية",
+    "logo_url": null,
+    "latitude": 25.2048,
+    "longitude": 55.2708,
+    "service_radius_m": 500,
+    "currency": "AED"
+  }
+}

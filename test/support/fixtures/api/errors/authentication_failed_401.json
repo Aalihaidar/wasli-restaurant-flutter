@@ -1,0 +1,10 @@
+{
+  "type": "client_error",
+  "errors": [
+    {
+      "code": "authentication_failed",
+      "detail": "Incorrect authentication credentials.",
+      "attr": null
+    }
+  ]
+}

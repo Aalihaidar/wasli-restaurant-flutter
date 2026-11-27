@@ -8,6 +8,7 @@ import 'package:wasli_restaurant/theme/wasli_colors.dart';
 import 'package:wasli_restaurant/theme/wasli_theme.dart';
 
 import '../support/app_config_overrides.dart';
+import '../support/session_overrides.dart';
 
 Theme _themeOfPage(WidgetTester tester) =>
     tester.widget<Theme>(find.ancestor(of: find.byType(HomePlaceholderPage), matching: find.byType(Theme)).first);
@@ -17,7 +18,8 @@ void main() {
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
 
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
-    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded], child: const App()));
+    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded, signedIn], child: const App()));
+    await tester.pump();
     expect(_themeOfPage(tester).data.extension<WasliColors>(), same(WasliColors.light));
     expect(_themeOfPage(tester).data.colorScheme.primary, lightTheme(AppLocales.english).colorScheme.primary);
 

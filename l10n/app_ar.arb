@@ -8,5 +8,18 @@
   "failureServer": "حدثت مشكلة في الخادم. حاول مرة أخرى بعد قليل.",
   "failureThrottled": "طلبات كثيرة جدًا. انتظر قليلًا ثم حاول مرة أخرى.",
   "failureGeneric": "حدث خطأ ما. حاول مرة أخرى.",
-  "requestIdLabel": "رقم الطلب"
+  "requestIdLabel": "رقم الطلب",
+  "loginTitle": "دخول الموظفين",
+  "loginUsername": "اسم المستخدم",
+  "loginPassword": "كلمة المرور",
+  "loginSubmit": "تسجيل الدخول",
+  "loginSigningIn": "جارٍ تسجيل الدخول",
+  "loginFieldRequired": "هذا الحقل مطلوب.",
+  "loginWrongCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة.",
+  "loginNoRestaurant": "هذا الحساب غير مرتبط بمطعم.",
+  "signOut": "تسجيل الخروج",
+  "homeSignedInAs": "تم تسجيل الدخول باسم {name}",
+  "roleAdmin": "مدير",
+  "roleCashier": "أمين الصندوق",
+  "roleUnknown": "موظف"
 }

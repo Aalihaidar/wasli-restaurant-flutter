@@ -18,5 +18,27 @@ void main() {
       expect(config.pollIntervalSeconds, 3);
       expect(config.toJson(), json);
     });
+
+    test('POST /auth/login (200)', () {
+      final json = readApiFixture('auth_login_200');
+      final token = StaffToken.fromJson(json);
+
+      expect(token.token, isNotEmpty);
+      expect(token.toJson(), json);
+    });
+
+    test('GET /staff/me (200)', () {
+      final json = readApiFixture('staff_me_200');
+      final me = StaffMe$Response.fromJson(json);
+
+      expect(me.username, 'sara.cashier');
+      expect(me.role.value, 'cashier');
+      expect(me.permissions.map((permission) => permission.value), ['orders.view', 'orders.decide']);
+      expect(me.mustChangePassword, isFalse);
+      expect(me.restaurant.nameAr, 'مشويات تجريبية');
+      expect(me.restaurant.logoUrl, isNull);
+      expect(me.restaurant.serviceRadiusM, 500);
+      expect(me.toJson(), json);
+    });
   });
 }

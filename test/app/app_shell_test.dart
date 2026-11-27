@@ -9,6 +9,7 @@ import 'package:wasli_restaurant/theme/design_tokens.dart';
 import 'package:wasli_restaurant/theme/wasli_theme.dart';
 
 import '../support/app_config_overrides.dart';
+import '../support/session_overrides.dart';
 
 const _box = Key('page');
 
@@ -75,7 +76,8 @@ void main() {
   }
 
   testWidgets('the app shows its first page inside the shell, with the name in the top bar', (tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded], child: const App()));
+    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded, signedIn], child: const App()));
+    await tester.pump();
 
     expect(find.byType(AppShell), findsOneWidget);
     expect(find.descendant(of: find.byType(AppBar), matching: find.text('Wasli Restaurant')), findsOneWidget);
