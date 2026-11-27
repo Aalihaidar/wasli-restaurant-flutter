@@ -9,13 +9,15 @@ import 'package:wasli_restaurant/core/config/app_config_exception.dart';
 import 'package:wasli_restaurant/core/config/app_environment.dart';
 import 'package:wasli_restaurant/core/config/app_environment_provider.dart';
 import 'package:wasli_restaurant/core/logging/logging_providers.dart';
+import 'package:wasli_restaurant/core/storage/platform_token_store.dart';
+import 'package:wasli_restaurant/core/storage/token_store_provider.dart';
 import 'package:wasli_restaurant/theme/font_licences.dart';
 
 /// Prepares the app and runs the root widget.
 ///
 /// Path URLs on the web (no `#`); the call does nothing on the other platforms. The build-time values are read once: a
 /// wrong value shows [ConfigErrorApp] and the app does not start. Otherwise the app runs inside a [ProviderScope] with
-/// the environment. Errors that nothing caught go to the logger and the crash reporter by type only, because the message
+/// the environment and the token store of the platform. Errors that nothing caught go to the logger and the crash reporter by type only, because the message
 /// of an error could hold personal data.
 void bootstrap() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +33,10 @@ void bootstrap() {
   }
 
   final container = ProviderContainer(
-    overrides: [if (environment != null) appEnvironmentProvider.overrideWithValue(environment)],
+    overrides: [
+      if (environment != null) appEnvironmentProvider.overrideWithValue(environment),
+      tokenStoreProvider.overrideWithValue(createPlatformTokenStore()),
+    ],
   );
   _reportUncaughtErrors(container);
 
