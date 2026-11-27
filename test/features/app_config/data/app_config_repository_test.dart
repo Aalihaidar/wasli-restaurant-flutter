@@ -6,14 +6,12 @@ import 'package:wasli_restaurant/core/network/dio_factory.dart';
 import 'package:wasli_restaurant/features/app_config/data/app_config_mapper.dart';
 import 'package:wasli_restaurant/features/app_config/data/app_config_repository_impl.dart';
 
+import '../../../support/api_fixtures.dart';
 import '../../../support/fake_http_adapter.dart';
 
-/// A `GET /config` answer with invented values, in the shape of the contract's `Config`.
+/// The `GET /config` fixture, with the poll interval changed for the tests that need another one.
 Map<String, Object?> configJson({int pollIntervalSeconds = 3}) => {
-  'location_check': 'warn',
-  'require_screen_online': true,
-  'ai_enabled': true,
-  'languages': ['en', 'ar'],
+  ...readApiFixture('config_200'),
   'poll_interval_seconds': pollIntervalSeconds,
 };
 
