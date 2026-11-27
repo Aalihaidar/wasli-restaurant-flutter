@@ -35,5 +35,63 @@
   "requestIdLabel": "Request ID",
   "@requestIdLabel": {
     "description": "The label before the request ID on a failure screen, so a problem can be found in the server logs."
+  },
+  "loginTitle": "Staff sign in",
+  "@loginTitle": {
+    "description": "The heading of the sign-in screen."
+  },
+  "loginUsername": "Username",
+  "@loginUsername": {
+    "description": "The label of the username field on the sign-in screen."
+  },
+  "loginPassword": "Password",
+  "@loginPassword": {
+    "description": "The label of the password field on the sign-in screen."
+  },
+  "loginSubmit": "Sign in",
+  "@loginSubmit": {
+    "description": "The button that signs the member in."
+  },
+  "loginSigningIn": "Signing in",
+  "@loginSigningIn": {
+    "description": "The spoken label of the progress indicator while signing in."
+  },
+  "loginFieldRequired": "This field is required.",
+  "@loginFieldRequired": {
+    "description": "Shown under a sign-in field that was left empty."
+  },
+  "loginWrongCredentials": "Wrong username or password.",
+  "@loginWrongCredentials": {
+    "description": "Shown when the server refuses the username or password (401)."
+  },
+  "loginNoRestaurant": "This account is not linked to a restaurant.",
+  "@loginNoRestaurant": {
+    "description": "Shown when the account signed in but has no restaurant (403 on the profile)."
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "The button that ends the session."
+  },
+  "homeSignedInAs": "Signed in as {name}",
+  "@homeSignedInAs": {
+    "description": "Says who is signed in, on the first screen.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "roleAdmin": "Admin",
+  "@roleAdmin": {
+    "description": "The label of the admin role."
+  },
+  "roleCashier": "Cashier",
+  "@roleCashier": {
+    "description": "The label of the cashier role."
+  },
+  "roleUnknown": "Staff",
+  "@roleUnknown": {
+    "description": "The label of a role this version of the app does not know."
   }
 }

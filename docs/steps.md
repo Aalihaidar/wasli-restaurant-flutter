@@ -246,7 +246,8 @@ Each item is its own small pull request.
       router, so every page sits in it. The placeholder page is now empty, because the name is in the bar. Tests check the
       bar and the page's position at 400, 1000 and 1600 wide in English and Arabic
 - [ ] App shell navigation (decide what it holds): the orders screen is the only destination until the admin panel
-      exists, so it waits for the screens that need it; the staff login may sit outside the shell
+      exists, so it waits for the screens that need it; the staff login sits inside the shell for now (top bar and content
+      frame), and may move outside it if its design asks
 - [x] `core/config`: `AppEnvironment` reads `APP_ENV` (then the flavor); unknown counts as staging
 - [x] `core/network`: Dio factory with timeouts; interceptors for the auth header (never on public endpoints),
       `X-Request-ID`, locale, redacted logging (no tokens, bodies or query strings); retry with backoff for reads only
@@ -266,8 +267,8 @@ Each item is its own small pull request.
       Android default Keystore-backed encryption with `android:allowBackup="false"` in the manifest so no backup restores
       a value its key cannot open; a value the platform cannot read counts as no token and is removed.
       `createPlatformTokenStore()` picks it (the in-memory store on the web) and `bootstrap` overrides `tokenStoreProvider`
-      with it. Clearing on logout and on a `401` comes with the staff login, which calls `clear()`. The web and Android
-      builds were checked locally; the Windows build waits for the Windows app below
+      with it. Clearing on logout and on a `401` is done by the staff login below (`AuthRepositoryImpl` and the network
+      layer). The web and Android builds were checked locally; the Windows build waits for the Windows app below
 - [x] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`, thousands grouped, sign kept, any other currency
       as its code), UTC → Asia/Dubai as a fixed +4 h (no daylight saving, no time-zone package) with `HH:mm` and
       `YYYY-MM-DD`, Western digits in both languages. Distance, plate and "time since placed" come with the orders feature
@@ -311,7 +312,11 @@ Each item is its own small pull request.
       indicator, the notice after 3 s, and after a failure a message for its kind (no connection, server error, too
       many requests, other), the request ID when the server sent one, and a **Try again** button. The provider does not
       retry by itself. The English and Arabic wording of these eight labels is a first version for the owner to confirm
-- [ ] Staff login screen skeleton (username and password, no password auto-fill), not reachable from a route yet
+- [x] Staff login screen (`features/auth/presentation`): the heading, a username and a password field (no auto-fill,
+      no suggestions, no spell correction; the password hidden), a 56 high **Sign in** button that is disabled with a
+      progress indicator while the request is on its way (one tap, one request), and a message for a wrong username or
+      password (`401`), an account without a restaurant (`403`) and the other failures. The texts in both languages are a
+      first wording for the owner to confirm. It is reachable: `/login` in the router (see Phase 8)
 - [ ] Unit and widget tests for each of the above (money formatting in both languages, error mapping, RTL smoke test)
 - [x] **Decide** golden tests: yes, for the core widgets in Arabic and English, light and dark (decided 2026-11-12)
 - [ ] Golden tests for the core widgets (`core/widgets` and the theme components), four variants each (en/ar,
@@ -345,9 +350,16 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
       then accept and reject; the tag `v0.3.0` once published) and fix what the compiler reports
       (pinned so far, at `31d2d1c`: login, logout, password, `staff/me`, the orders list, accept, reject and ready; the
       tag `v0.3.0` is still to come)
-- [ ] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
+- [x] Staff login (`POST /auth/login`, answers only the token), logout (`POST /auth/logout`), `GET /staff/me` right after
       login (role, permissions, `must_change_password`, restaurant); a `401` returns to login once; a `403` on
-      `GET /staff/me` means the account has no restaurant membership any more
+      `GET /staff/me` means the account has no restaurant membership any more. `AuthRepositoryImpl` (login, then the
+      profile with the new token; a failure after the login removes the token again; logout removes the token even when
+      the server cannot be told), `SessionNotifier` (`sessionProvider`: looks up the stored token on start, keeps the
+      session, ends it on sign-out or when the network layer raises `sessionExpiryProvider` after a `401`), `SessionGate`
+      (loading, or the message with **Try again** when the lookup failed) and the router redirects (nobody signed in goes
+      to `/login`, a member who opens it goes to the first screen). The first screen shows the restaurant, who is signed
+      in, the role and **Sign out** until the orders list exists. `must_change_password` is read but not acted on yet
+      (the next step)
 - [ ] Change password (`POST /auth/password`, `current_password` and `new_password`, `204`) when `must_change_password` is
       `true`; the other staff endpoints keep working meanwhile, the app decides how firmly to ask
 - [ ] Hide or disable actions by role and permissions (`orders.view`, `orders.decide`, ...); the server stays the

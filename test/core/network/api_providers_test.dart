@@ -5,6 +5,7 @@ import 'package:wasli_restaurant/core/config/app_environment_provider.dart';
 import 'package:wasli_restaurant/core/l10n/app_locales.dart';
 import 'package:wasli_restaurant/core/l10n/locale_controller.dart';
 import 'package:wasli_restaurant/core/network/api_providers.dart';
+import 'package:wasli_restaurant/core/network/session_expiry.dart';
 import 'package:wasli_restaurant/core/storage/memory_token_store.dart';
 import 'package:wasli_restaurant/core/storage/token_store_provider.dart';
 
@@ -62,5 +63,31 @@ void main() {
     await container.read(dioProvider).get<dynamic>('/api/v1/config');
 
     expect(container.read(requestIdRecorderProvider).last, 'req-9');
+  });
+
+  test('a 401 on an authenticated call removes the token and raises the session expiry signal once', () async {
+    adapter = FakeHttpAdapter([
+      jsonResponder({'type': 'client_error', 'errors': <Object>[]}, status: 401),
+    ]);
+    container.read(dioProvider).httpClientAdapter = adapter;
+
+    await expectLater(container.read(dioProvider).get<dynamic>('/api/v1/staff/orders'), throwsA(anything));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(await tokens.read(), isNull);
+    expect(container.read(sessionExpiryProvider), 1);
+  });
+
+  test('a 401 on the login itself does not end any session', () async {
+    adapter = FakeHttpAdapter([
+      jsonResponder({'type': 'client_error', 'errors': <Object>[]}, status: 401),
+    ]);
+    container.read(dioProvider).httpClientAdapter = adapter;
+
+    await expectLater(container.read(dioProvider).post<dynamic>('/api/v1/auth/login'), throwsA(anything));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(await tokens.read(), 'secret-token');
+    expect(container.read(sessionExpiryProvider), 0);
   });
 }

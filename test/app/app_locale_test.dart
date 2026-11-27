@@ -7,22 +7,25 @@ import 'package:wasli_restaurant/app/home_placeholder_page.dart';
 import 'package:wasli_restaurant/core/l10n/locale_controller.dart';
 
 import '../support/app_config_overrides.dart';
+import '../support/session_overrides.dart';
 
 TextDirection _directionOfPage(WidgetTester tester) =>
     Directionality.of(tester.element(find.byType(HomePlaceholderPage)));
 
 void main() {
   testWidgets('starts in English, left to right', (tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded], child: const App()));
+    await tester.pumpWidget(ProviderScope(overrides: [appConfigLoaded, signedIn], child: const App()));
+    await tester.pump();
 
     expect(find.text('Wasli Restaurant'), findsOneWidget);
     expect(_directionOfPage(tester), TextDirection.ltr);
   });
 
   testWidgets('switching to Arabic changes the text and flips the layout to right to left', (tester) async {
-    final container = ProviderContainer(overrides: [appConfigLoaded]);
+    final container = ProviderContainer(overrides: [appConfigLoaded, signedIn]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
+    await tester.pump();
 
     container.read(localeProvider.notifier).setLocale(const Locale('ar'));
     await tester.pumpAndSettle();
@@ -33,9 +36,10 @@ void main() {
   });
 
   testWidgets('the Material widgets get their own Arabic labels too', (tester) async {
-    final container = ProviderContainer(overrides: [appConfigLoaded]);
+    final container = ProviderContainer(overrides: [appConfigLoaded, signedIn]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
+    await tester.pump();
 
     container.read(localeProvider.notifier).setLocale(const Locale('ar'));
     await tester.pumpAndSettle();
@@ -46,9 +50,10 @@ void main() {
   });
 
   testWidgets('switching back to English restores left to right', (tester) async {
-    final container = ProviderContainer(overrides: [appConfigLoaded]);
+    final container = ProviderContainer(overrides: [appConfigLoaded, signedIn]);
     addTearDown(container.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const App()));
+    await tester.pump();
 
     container.read(localeProvider.notifier).setLocale(const Locale('ar'));
     await tester.pumpAndSettle();
