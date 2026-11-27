@@ -256,8 +256,13 @@ Each item is its own small pull request.
 - [x] `core/storage`: `TokenStore` interface (`read`, `write`, `clear`) and the in-memory implementation, the interim
       store on the web (the token is gone when the page reloads); `tokenStoreProvider` gives the in-memory store until a
       platform store overrides it. The token never reaches `shared_preferences`, a log or a `toString`
-- [ ] `flutter_secure_storage` implementation of `TokenStore` for Android, iOS and Windows (Android backups exclude it;
-      cleared on logout and on a `401`), chosen where the app is assembled
+- [x] `flutter_secure_storage` (11.2.0) implementation of `TokenStore` for Android, iOS and Windows (`SecureTokenStore`):
+      one key, the iOS Keychain item readable after the first unlock and never synced or moved to another device, the
+      Android default Keystore-backed encryption with `android:allowBackup="false"` in the manifest so no backup restores
+      a value its key cannot open; a value the platform cannot read counts as no token and is removed.
+      `createPlatformTokenStore()` picks it (the in-memory store on the web) and `bootstrap` overrides `tokenStoreProvider`
+      with it. Clearing on logout and on a `401` comes with the staff login, which calls `clear()`. The web and Android
+      builds were checked locally; the Windows build waits for the Windows app below
 - [x] `core/format`: money from integer fils (`AED 12.50` / `12.50 د.إ`, thousands grouped, sign kept, any other currency
       as its code), UTC → Asia/Dubai as a fixed +4 h (no daylight saving, no time-zone package) with `HH:mm` and
       `YYYY-MM-DD`, Western digits in both languages. Distance, plate and "time since placed" come with the orders feature
@@ -400,8 +405,8 @@ Before D3 freezes the staff order object, raise the backend requests (see "Backe
 ## Later (only when needed)
 
 - [ ] Realtime orders instead of polling (same order shapes)
-- [ ] Windows app: `windows/` folder, `windows-latest` CI runner, sound/wake lock/printing in the platform layer,
-      `flutter_secure_storage` token store
+- [ ] Windows app: `windows/` folder, `windows-latest` CI runner, sound/wake lock/printing in the platform layer
+      (the `flutter_secure_storage` token store is already chosen for Windows by `createPlatformTokenStore`)
 - [ ] Android store release (only if restaurants need it): Play listing and staged rollout, release builds with
       obfuscation and split debug info, `min_app_version` in `/config`
 - [ ] iOS flavors on a Mac (schemes `staging` and `production`, bundle ID per flavor, the same IDs as Android), then
